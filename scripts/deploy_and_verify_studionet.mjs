@@ -4,7 +4,7 @@ import crypto from 'node:crypto';
 import assert from 'node:assert/strict';
 import { createClient, createAccount } from 'genlayer-js';
 import { studionet } from 'genlayer-js/chains';
-import { transactionsStatusNumberToName } from 'genlayer-js/types';
+import { summarizeReceipt } from './studionet_receipt.mjs';
 
 const RPC_URL = 'https://studio.genlayer.com/api';
 const CHAIN_ID = 61999;
@@ -22,20 +22,6 @@ assert.equal(progress.chainId, CHAIN_ID);
 if (Object.keys(progress.transactions).length === 0) progress.sourceSha256 = sourceSha256;
 assert.equal(progress.sourceSha256, sourceSha256, 'Contract changed after submission. Inspect the existing transactions before starting another deployment.');
 const saveProgress = () => fs.writeFileSync(progressPath, json({...progress, updatedAt: new Date().toISOString()}));
-
-function receiptSummary(tx, hash) {
-  const leaders = tx.consensus_data?.leader_receipt;
-  const leader = Array.isArray(leaders) ? leaders[leaders.length - 1] : leaders;
-  const execution = tx.txExecutionResultName ?? leader?.execution_result;
-  return {
-    hash, status: tx.statusName ?? transactionsStatusNumberToName[String(tx.status)] ?? tx.status,
-    executionResult: execution,
-    contractAddress: tx.to_address ?? tx.recipient,
-    votes: tx.consensus_data?.votes ?? {},
-    validatorCount: tx.consensus_data?.validators?.length ?? tx.lastRound?.roundValidators?.length ?? 0,
-    error: leader?.error ?? leader?.result ?? leader?.genvm_result ?? null,
-  };
-}
 
 async function main() {
   assert.equal(studionet.id, CHAIN_ID);
@@ -78,7 +64,7 @@ async function main() {
     for (let attempt = 0; attempt < 240; attempt++) {
       const tx = await client.getTransaction({hash});
       if (tx) {
-        const summary = receiptSummary(tx, hash);
+        const summary = summarizeReceipt(tx, hash);
         progress.receipts[name] = summary;
         saveProgress();
         if (summary.status !== lastStatus) console.log(name, summary.status, summary.executionResult ?? '');
@@ -87,7 +73,7 @@ async function main() {
           throw new Error(`${name} failed: ${json(summary)}`);
         }
         if (summary.status === 'FINALIZED') {
-          assert.ok(['SUCCESS', 'FINISHED_WITH_RETURN'].includes(summary.executionResult), `${name} execution did not succeed: ${json(summary)}`);
+          assert.equal(summary.successful, true, `${name} execution did not succeed: ${json(summary)}`);
           return tx;
         }
       }

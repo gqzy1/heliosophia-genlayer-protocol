@@ -6,6 +6,10 @@
 
 These tests do not claim to run a real GenVM or establish validator agreement. Live execution is verified separately through finalized successful receipts and contract reads.
 
+## Receipt checks
+
+`node --test scripts/test_studionet_receipt.mjs` runs 7 receipt regression tests. Successful execution, finality, and validator majority agreement are checked separately. An idle validator cannot replace a successful leader, and a finalized transaction without quorum agreement cannot pass verification.
+
 ## Frontend preservation
 
 `frontend-integrity.json` records SHA-256 values from the original source package. `node scripts/verify_frontend_integrity.mjs` requires the original file set and exact bytes for all 11 protected frontend files. Only `src/config/deployment.json` may change to contain verified deployment data. The original `npm run build` command is used unchanged.

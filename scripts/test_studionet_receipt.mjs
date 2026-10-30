@@ -6,7 +6,8 @@ const leader = {mode:'leader', execution_result:'SUCCESS', result:{status:'retur
 const idle = {mode:'validator', vote:'idle', execution_result:'ERROR',
   result:{status:'contract_error', payload:'idle'},
   genvm_result:{error_code:'CONSENSUS_VALIDATOR_QUORUM_REACHED'}};
-const transaction = receipts => ({statusName:'FINALIZED', consensus_data:{leader_receipt:receipts}});
+const transaction = receipts => ({statusName:'FINALIZED', consensus_data:{leader_receipt:receipts,
+  votes:{a:'agree',b:'agree',c:'agree',d:'idle',e:'idle'}}});
 
 test('a quorum-canceled validator cannot replace a successful leader', () => {
   const summary = summarizeReceipt(transaction([leader,idle]), '0x123');
@@ -29,4 +30,16 @@ test('a returned contract error cannot pass because of a success label', () => {
 });
 test('an idle validator without a leader cannot establish success', () => {
   assert.equal(summarizeReceipt(transaction([idle]), '0x123').successful, false);
+});
+test('a finalized successful leader without consensus is rejected', () => {
+  const tx = transaction([leader,idle]);
+  tx.consensus_data.votes = {a:'disagree',b:'disagree',c:'disagree',d:'idle',e:'idle'};
+  const summary = summarizeReceipt(tx, '0x123');
+  assert.equal(summary.successful, false);
+  assert.equal(summary.quorumAgreed, false);
+});
+test('an undetermined transaction cannot pass even with a successful leader', () => {
+  const tx = transaction([leader]);
+  tx.statusName = 'UNDETERMINED';
+  assert.equal(summarizeReceipt(tx, '0x123').successful, false);
 });

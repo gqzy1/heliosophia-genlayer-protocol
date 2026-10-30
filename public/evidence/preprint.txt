@@ -1,0 +1,14 @@
+HELIOSOPHIA CONTROLLED ACCEPTANCE FIXTURE
+Title: Synthetic structural benchmark with a falsifiable tolerance clause
+Version: 1.0
+Evidence type: synthetic test data, publicly hosted to test live GenVM web retrieval.
+
+Claim under evaluation in this controlled test:
+A synthetic method must achieve backbone RMSD <= 1.26 Angstrom and compute
+reduction >= 38 percent on the fixture target across five independent seeds.
+RMSD means root mean square deviation in Angstrom. Compute reduction is measured
+against the fixture baseline. Both limits must be satisfied in all five runs.
+
+This document is an integration-test input. It is not a real preprint, patent,
+scientific discovery, institutional endorsement, independent laboratory report,
+or proof of scientific novelty. No actual research or token payout is claimed.

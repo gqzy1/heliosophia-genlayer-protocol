@@ -1,0 +1,14 @@
+{
+  "evidence_type": "SYNTHETIC_ACCEPTANCE_FIXTURE",
+  "lab": "Heliosophia controlled integration fixture",
+  "target": "synthetic-structure-01",
+  "units": {"backbone_rmsd": "Angstrom", "compute_reduction": "percent"},
+  "runs": [
+    {"seed": 1, "backbone_rmsd": 1.21, "compute_reduction": 40.9},
+    {"seed": 2, "backbone_rmsd": 1.22, "compute_reduction": 40.4},
+    {"seed": 3, "backbone_rmsd": 1.20, "compute_reduction": 41.0},
+    {"seed": 4, "backbone_rmsd": 1.23, "compute_reduction": 39.8},
+    {"seed": 5, "backbone_rmsd": 1.21, "compute_reduction": 40.7}
+  ],
+  "notice": "Synthetic inputs for real Studionet consensus execution; no real scientific experiment or institutional affiliation."
+}

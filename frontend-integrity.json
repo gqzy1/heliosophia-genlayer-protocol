@@ -1,0 +1,14 @@
+{
+  "src/App.tsx": "0c5ff517bcce630660fd306923fa1e1335429e6075f956b4dc4d8bc45a3f1c29",
+  "src/audio/mechanicalSound.ts": "e77878d96ef22076063f45d3530d04cb2d1fbf67e1e8d104e6f7d15d027a43d4",
+  "src/components/ArchitectureAndGovernance.tsx": "773a88c09dea5dc608a25c5356e0e03d4ab21816f560267d06f8255c1d7a6240",
+  "src/components/ContractAndRpcInspector.tsx": "55a3b8505214154989b99f308cde933b2b1e4659428fb49aee73d733effb2ae2",
+  "src/components/EpistemicCartographyCanvas.tsx": "56974ea51d97203f64b18828b500cbad2f678968ef74c81fa81cd41f2bab69f0",
+  "src/components/ReplicationWorkbench.tsx": "5bb399ac2dc86617079678f150c47f0334b1e1c5ee03e69a13bc5107b156bd2c",
+  "src/config/deployment.json": "d07714f778ef900644da2e154a2306e6aee2e6d4c430c1d6c1a6185f49f2532e",
+  "src/config/studionet.ts": "dac1ef8f2ce3049503feb28b36442c59d8f7bf3d23d45eb34674822c423e86eb",
+  "src/data/discoveries.ts": "6543588b7e69e3b703aa8d20d96cb94bffc95ddfa6a7d737a6771ca787b121d3",
+  "src/index.css": "18243db3c5699c22dfffa9d3b2159af7424cfcc42ea32d6b732ffac599375bb6",
+  "src/main.tsx": "14a10dee4aaa2130d9f57c136db7f16f95f524d60d77146b17776e91c2ab626c",
+  "src/types/heliosophia.ts": "5b5cc305f2db44c0fc9110a761ef86087527396916cc47bd3af3aa7167de161f"
+}

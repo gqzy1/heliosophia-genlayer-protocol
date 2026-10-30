@@ -1,0 +1,16 @@
+{
+  "mode": "LOCAL_VERIFIED_SIMULATION",
+  "network": "GenLayer Stable Studionet",
+  "chainId": 61999,
+  "rpcUrl": "https://studio.genlayer.com/api",
+  "contractAddress": null,
+  "deployerAddress": null,
+  "transactions": {
+    "deployContract": null,
+    "registerDiscovery": null,
+    "submitReplicationProof": null
+  },
+  "lastOnchainState": null,
+  "updatedAt": "2026-10-30T08:00:00Z",
+  "notice": "Pre-deployment handoff state. Run `npm run deploy:studionet` (scripts/deploy_and_verify_studionet.mjs) to deploy on GenLayer Studionet (61999) and automatically populate this file with live on-chain transaction hashes."
+}

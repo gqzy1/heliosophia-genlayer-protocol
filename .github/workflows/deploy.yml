@@ -1,0 +1,86 @@
+name: Test Heliosophia Contract & Deploy to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      verify_onchain:
+        description: "Deploy or resume the zero-cost Stable Studionet verification"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build_and_deploy:
+    timeout-minutes: 40
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run production-contract unit tests
+        run: python3 contracts/test_heliosophia_contract.py
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify protected frontend integrity
+        run: node scripts/verify_frontend_integrity.mjs
+
+      - name: Deploy and verify Stable Studionet 61999
+        if: github.event_name == 'workflow_dispatch' && inputs.verify_onchain
+        run: npm run deploy:studionet
+
+      - name: Preserve transaction progress and verified configuration
+        if: always() && github.event_name == 'workflow_dispatch' && inputs.verify_onchain
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for file in onchain-progress.json onchain-deployment-proof.json src/config/deployment.json; do
+            if [ -f "$file" ]; then git add "$file"; fi
+          done
+          if ! git diff --cached --quiet; then
+            git commit -m "Record Stable Studionet transaction evidence"
+            git push origin HEAD:main
+          fi
+
+      - name: Archive transaction evidence
+        if: always() && github.event_name == 'workflow_dispatch' && inputs.verify_onchain
+        uses: actions/upload-artifact@v4
+        with:
+          name: studionet-transaction-evidence
+          path: onchain-*.json
+          if-no-files-found: ignore
+
+      - name: Build complete frontend
+        run: npm run build
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload static artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

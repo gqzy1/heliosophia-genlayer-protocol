@@ -19,6 +19,7 @@ let progress = fs.existsSync(progressPath) ? JSON.parse(fs.readFileSync(progress
   transactions: {}, receipts: {},
 };
 assert.equal(progress.chainId, CHAIN_ID);
+if (Object.keys(progress.transactions).length === 0) progress.sourceSha256 = sourceSha256;
 assert.equal(progress.sourceSha256, sourceSha256, 'Contract changed after submission. Inspect the existing transactions before starting another deployment.');
 const saveProgress = () => fs.writeFileSync(progressPath, json({...progress, updatedAt: new Date().toISOString()}));
 

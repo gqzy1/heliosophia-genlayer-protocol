@@ -1,15 +1,51 @@
 {
   "chainId": 61999,
   "rpcUrl": "https://studio.genlayer.com/api",
-  "sourceSha256": "209715f3424d8061fdf4dd696c252bb2cf2bf14ee349c785fcc6d0b4fd827de2",
+  "sourceSha256": "ef4ff1e570b76aacfe0f7d7abc31c263ef4b77232fa161734524891f65d1b5e7",
   "discoveryId": "HLS-2026-0104",
-  "transactions": {},
-  "receipts": {},
+  "transactions": {
+    "deployContract": "0xe0169ad8c2614ab9698dbee730c1b9261df21313e1a84485e51c5033c3e987d0",
+    "registerDiscovery": "0xa17892f6b8c8b88f03b842c41bc6b63d934ec6dd833b3e7794b2661203de2777"
+  },
+  "receipts": {
+    "deployContract": {
+      "hash": "0xe0169ad8c2614ab9698dbee730c1b9261df21313e1a84485e51c5033c3e987d0",
+      "status": "FINALIZED",
+      "executionResult": "SUCCESS",
+      "contractAddress": "0x21c9A008551188B42Fe961938e055691598a85e8",
+      "votes": {
+        "0x045291B293B9D68969c18B6637A8258038cf787A": "agree",
+        "0x4868b172ddEBC18b5219aaCeAB77ae0Df330c83A": "idle",
+        "0x63d72fE364368491E62a42B9C73c317Ce1ca8434": "agree",
+        "0xcab45E3fe9cC9592B5C378E47734E022b7Df80c9": "agree",
+        "0xe06A34A1eBd398AF3399d08593B8c3C433CdD947": "idle"
+      },
+      "validatorCount": 4,
+      "error": null
+    },
+    "registerDiscovery": {
+      "hash": "0xa17892f6b8c8b88f03b842c41bc6b63d934ec6dd833b3e7794b2661203de2777",
+      "status": "FINALIZED",
+      "executionResult": "ERROR",
+      "contractAddress": "0x21c9A008551188B42Fe961938e055691598a85e8",
+      "votes": {
+        "0x007d6451555Df7765c707284F844137927aE4e5E": "agree",
+        "0x4441Ebe37E72c039B73f1D6CF8C6DEe277FE547a": "agree",
+        "0x5D9Ee6E9aAF2F0b739314A52dd9Da57cd8866dA8": "idle",
+        "0xCe0B66448435cA53665C954705Abd753515594Cf": "agree",
+        "0xb9ed1258763dfFC83356b15e8A20236B86E42ba2": "idle"
+      },
+      "validatorCount": 4,
+      "error": null
+    }
+  },
   "rpcPreflight": {
     "chainId": "0xf22f",
     "gasPrice": "0x0",
-    "checkedAt": "2026-10-30T08:57:40.031Z"
+    "checkedAt": "2026-10-30T09:01:17.089Z"
   },
   "evidenceRef": "f9e37bf76a59ca17b4b75b8fb3822c95bbe8287e",
-  "updatedAt": "2026-10-30T08:57:41.231Z"
+  "updatedAt": "2026-10-30T09:02:47.870Z",
+  "deployerAddress": "0x4Ba2cd577256a2c4bA51144E76412035CB973E00",
+  "contractAddress": "0x21c9A008551188B42Fe961938e055691598a85e8"
 }

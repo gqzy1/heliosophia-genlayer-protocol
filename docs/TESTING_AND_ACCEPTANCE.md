@@ -41,3 +41,7 @@ Readback: `get_discovery_count() = 1`; `replication_count = 1`; `status = REPLIC
 The [machine-readable proof](../onchain-deployment-proof.json) includes receipts, votes, source hash, baseline, final state, audit, and the zero-gas RPC check. The initial inconclusive attempt is retained in [its separate evidence record](evidence/studionet-attempt-1.json) and is excluded from the successful proof.
 
 The inputs are labelled synthetic fixtures. These results verify execution of the reported-measurement comparison and accounting policy, not a real scientific experiment, laboratory independence, or a USDC transfer.
+
+The [published build](https://github.com/gqzy1/heliosophia-genlayer-protocol/actions/runs/41072038898) passed all checks and deployed successfully. The public page was checked for the mounted contract address and a live `eth_chainId` response of `0xf22f`.
+
+![Published interface with verified contract binding](screenshots/heliosophia-live-1793370719313.jpg)

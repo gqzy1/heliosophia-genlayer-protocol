@@ -1,0 +1,15 @@
+{
+  "chainId": 61999,
+  "rpcUrl": "https://studio.genlayer.com/api",
+  "sourceSha256": "209715f3424d8061fdf4dd696c252bb2cf2bf14ee349c785fcc6d0b4fd827de2",
+  "discoveryId": "HLS-2026-0104",
+  "transactions": {},
+  "receipts": {},
+  "rpcPreflight": {
+    "chainId": "0xf22f",
+    "gasPrice": "0x0",
+    "checkedAt": "2026-10-30T08:57:40.031Z"
+  },
+  "evidenceRef": "f9e37bf76a59ca17b4b75b8fb3822c95bbe8287e",
+  "updatedAt": "2026-10-30T08:57:41.231Z"
+}

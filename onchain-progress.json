@@ -21,7 +21,16 @@
         "0xe06A34A1eBd398AF3399d08593B8c3C433CdD947": "idle"
       },
       "validatorCount": 4,
-      "error": null
+      "error": {
+        "raw": "AAA=",
+        "status": "return",
+        "payload": {
+          "raw": [
+            0
+          ],
+          "readable": "null"
+        }
+      }
     },
     "registerDiscovery": {
       "hash": "0xa17892f6b8c8b88f03b842c41bc6b63d934ec6dd833b3e7794b2661203de2777",
@@ -36,16 +45,20 @@
         "0xb9ed1258763dfFC83356b15e8A20236B86E42ba2": "idle"
       },
       "validatorCount": 4,
-      "error": null
+      "error": {
+        "raw": "AmlkbGU=",
+        "status": "contract_error",
+        "payload": "idle"
+      }
     }
   },
   "rpcPreflight": {
     "chainId": "0xf22f",
     "gasPrice": "0x0",
-    "checkedAt": "2026-10-30T09:01:17.089Z"
+    "checkedAt": "2026-10-30T09:06:47.391Z"
   },
   "evidenceRef": "f9e37bf76a59ca17b4b75b8fb3822c95bbe8287e",
-  "updatedAt": "2026-10-30T09:02:47.870Z",
+  "updatedAt": "2026-10-30T09:06:47.626Z",
   "deployerAddress": "0x4Ba2cd577256a2c4bA51144E76412035CB973E00",
   "contractAddress": "0x21c9A008551188B42Fe961938e055691598a85e8"
 }

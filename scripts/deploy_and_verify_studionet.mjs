@@ -33,7 +33,7 @@ function receiptSummary(tx, hash) {
     contractAddress: tx.to_address ?? tx.recipient,
     votes: tx.consensus_data?.votes ?? {},
     validatorCount: tx.consensus_data?.validators?.length ?? tx.lastRound?.roundValidators?.length ?? 0,
-    error: leader?.error ?? null,
+    error: leader?.error ?? leader?.result ?? leader?.genvm_result ?? null,
   };
 }
 

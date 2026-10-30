@@ -3,9 +3,99 @@
   "rpcUrl": "https://studio.genlayer.com/api",
   "sourceSha256": "ff11a349ae9ca133666a4d2cac53d309997cbd7385bfeea3ae82bddfc1ba182c",
   "discoveryId": "HLS-2026-0104",
-  "transactions": {},
-  "receipts": {},
+  "transactions": {
+    "deployContract": "0x4a3d7304125fde7aa50abed56098d48f303b5d2e9320c8f20f14aa0d928d8e2a",
+    "registerDiscovery": "0x9ccfd4e292701dd1e3124d734b76f62b0793a988421c9b070b5816314d4cb75b",
+    "submitReplicationProof": "0x5acb862b045765a35498f1d712bdca71c279abae0ff44ad5c0756cb65fea686f"
+  },
+  "receipts": {
+    "deployContract": {
+      "hash": "0x4a3d7304125fde7aa50abed56098d48f303b5d2e9320c8f20f14aa0d928d8e2a",
+      "status": "FINALIZED",
+      "executionResult": "SUCCESS",
+      "returnStatus": "return",
+      "successful": true,
+      "contractAddress": "0x98E0fda73CD21b83f3A55491E64C03D650091029",
+      "votes": {
+        "0x5D9Ee6E9aAF2F0b739314A52dd9Da57cd8866dA8": "agree",
+        "0x5e84e17266a193077728229751aC8A1dD24be146": "idle",
+        "0x9C182DE7F93AdbE8ee3D62570613eC23c5683cAc": "agree",
+        "0xb04cdDC4a6Ff6A0aDF715cfe00Fa307b901cebD4": "idle",
+        "0xe06A34A1eBd398AF3399d08593B8c3C433CdD947": "agree"
+      },
+      "agreeCount": 3,
+      "quorumAgreed": true,
+      "validatorCount": 4,
+      "error": null
+    },
+    "registerDiscovery": {
+      "hash": "0x9ccfd4e292701dd1e3124d734b76f62b0793a988421c9b070b5816314d4cb75b",
+      "status": "FINALIZED",
+      "executionResult": "SUCCESS",
+      "returnStatus": "return",
+      "successful": true,
+      "contractAddress": "0x98E0fda73CD21b83f3A55491E64C03D650091029",
+      "votes": {
+        "0x007d6451555Df7765c707284F844137927aE4e5E": "agree",
+        "0x336458747913FE397be82c4F0926ACeB3ab13618": "idle",
+        "0x378aED3bA912Ce77C3C66155961A7e61C2fE8F3B": "idle",
+        "0xcab45E3fe9cC9592B5C378E47734E022b7Df80c9": "agree",
+        "0xe06A34A1eBd398AF3399d08593B8c3C433CdD947": "agree"
+      },
+      "agreeCount": 3,
+      "quorumAgreed": true,
+      "validatorCount": 4,
+      "error": null
+    },
+    "submitReplicationProof": {
+      "hash": "0x5acb862b045765a35498f1d712bdca71c279abae0ff44ad5c0756cb65fea686f",
+      "status": "FINALIZED",
+      "executionResult": "SUCCESS",
+      "returnStatus": "return",
+      "successful": true,
+      "contractAddress": "0x98E0fda73CD21b83f3A55491E64C03D650091029",
+      "votes": {
+        "0x378aED3bA912Ce77C3C66155961A7e61C2fE8F3B": "idle",
+        "0x4441Ebe37E72c039B73f1D6CF8C6DEe277FE547a": "agree",
+        "0x5D9Ee6E9aAF2F0b739314A52dd9Da57cd8866dA8": "agree",
+        "0xF7D08d12dB37D3e02D1833b5cB7e56B07F114186": "agree",
+        "0xe06A34A1eBd398AF3399d08593B8c3C433CdD947": "idle"
+      },
+      "agreeCount": 3,
+      "quorumAgreed": true,
+      "validatorCount": 4,
+      "error": null
+    }
+  },
   "evidenceRef": "f9e37bf76a59ca17b4b75b8fb3822c95bbe8287e",
-  "previousAttempt": "docs/evidence/studionet-attempt-1.json"
+  "previousAttempt": "docs/evidence/studionet-attempt-1.json",
+  "rpcPreflight": {
+    "chainId": "0xf22f",
+    "gasPrice": "0x0",
+    "checkedAt": "2026-10-30T14:19:24.210Z"
+  },
+  "deployerAddress": "0x94dBAaD698606d0D8090CE76055791C8175fd7FD",
+  "contractAddress": "0x98E0fda73CD21b83f3A55491E64C03D650091029",
+  "baselineState": {
+    "id": "HLS-2026-0104",
+    "lead_author": "Heliosophia synthetic acceptance fixture",
+    "creator": "0x94dBAaD698606d0D8090CE76055791C8175fd7FD",
+    "title": "Synthetic structural benchmark: controlled acceptance fixture",
+    "preprint_url": "https://raw.githubusercontent.com/gqzy1/heliosophia-genlayer-protocol/f9e37bf76a59ca17b4b75b8fb3822c95bbe8287e/public/evidence/preprint.txt",
+    "target_metric_clause": "Across five seeds, backbone RMSD must be <= 1.26 Angstrom and compute reduction >= 38 percent on the synthetic target.",
+    "royalty_pool_usdc": 80000,
+    "replicator_share_bps": 2000,
+    "novelty_tier": "DERIVATIVE",
+    "epistemic_confidence_bps": 7600,
+    "methodology_summary": "The controlled fixture requires a synthetic method to achieve backbone RMSD <= 1.26 Angstrom and compute reduction >= 38 percent across five independent seeds.",
+    "preprint_sha256": "10862ba20088193744a5a54de7ec3a6af682fe31b836262689f0cbda6f3128d6",
+    "settlement_mode": "ACCOUNTING_ONLY_NO_TOKEN_TRANSFER",
+    "status": "OPEN_FOR_REPLICATION",
+    "replication_count": 0,
+    "author_royalty_released": 0,
+    "replicator_royalty_released": 0,
+    "last_verdict": "BASELINE_INDEXED"
+  },
+  "complete": true,
+  "updatedAt": "2026-10-30T14:22:31.974Z"
 }
-

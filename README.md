@@ -2,6 +2,10 @@
 
 Scientific reproducibility and evidence-backed royalty accounting on **GenLayer Stable Studionet**.
 
+[Open the application](https://gqzy1.github.io/heliosophia-genlayer-protocol/) · [Verified on-chain evidence](onchain-deployment-proof.json)
+
+Verified contract on chain 61999: `0x98E0fda73CD21b83f3A55491E64C03D650091029`.
+
 Heliosophia records a falsifiable research claim, commits its source with SHA-256, and compares submitted replication evidence against the declared tolerance. GenLayer validators independently evaluate fetched evidence before the contract updates its epistemic index and accounting allocations.
 
 ## Experience

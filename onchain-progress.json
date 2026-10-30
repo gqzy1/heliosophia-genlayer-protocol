@@ -5,13 +5,16 @@
   "discoveryId": "HLS-2026-0104",
   "transactions": {
     "deployContract": "0xe0169ad8c2614ab9698dbee730c1b9261df21313e1a84485e51c5033c3e987d0",
-    "registerDiscovery": "0xa17892f6b8c8b88f03b842c41bc6b63d934ec6dd833b3e7794b2661203de2777"
+    "registerDiscovery": "0xa17892f6b8c8b88f03b842c41bc6b63d934ec6dd833b3e7794b2661203de2777",
+    "submitReplicationProof": "0xaea210e422e04ef530d4c4ebd0ebe30a0bcc298694577cb9788940689f88eef3"
   },
   "receipts": {
     "deployContract": {
       "hash": "0xe0169ad8c2614ab9698dbee730c1b9261df21313e1a84485e51c5033c3e987d0",
       "status": "FINALIZED",
       "executionResult": "SUCCESS",
+      "returnStatus": "return",
+      "successful": true,
       "contractAddress": "0x21c9A008551188B42Fe961938e055691598a85e8",
       "votes": {
         "0x045291B293B9D68969c18B6637A8258038cf787A": "agree",
@@ -21,21 +24,14 @@
         "0xe06A34A1eBd398AF3399d08593B8c3C433CdD947": "idle"
       },
       "validatorCount": 4,
-      "error": {
-        "raw": "AAA=",
-        "status": "return",
-        "payload": {
-          "raw": [
-            0
-          ],
-          "readable": "null"
-        }
-      }
+      "error": null
     },
     "registerDiscovery": {
       "hash": "0xa17892f6b8c8b88f03b842c41bc6b63d934ec6dd833b3e7794b2661203de2777",
       "status": "FINALIZED",
-      "executionResult": "ERROR",
+      "executionResult": "SUCCESS",
+      "returnStatus": "return",
+      "successful": true,
       "contractAddress": "0x21c9A008551188B42Fe961938e055691598a85e8",
       "votes": {
         "0x007d6451555Df7765c707284F844137927aE4e5E": "agree",
@@ -45,20 +41,53 @@
         "0xb9ed1258763dfFC83356b15e8A20236B86E42ba2": "idle"
       },
       "validatorCount": 4,
-      "error": {
-        "raw": "AmlkbGU=",
-        "status": "contract_error",
-        "payload": "idle"
-      }
+      "error": null
+    },
+    "submitReplicationProof": {
+      "hash": "0xaea210e422e04ef530d4c4ebd0ebe30a0bcc298694577cb9788940689f88eef3",
+      "status": "UNDETERMINED",
+      "executionResult": "SUCCESS",
+      "returnStatus": "return",
+      "successful": true,
+      "contractAddress": "0x21c9A008551188B42Fe961938e055691598a85e8",
+      "votes": {
+        "0x045291B293B9D68969c18B6637A8258038cf787A": "disagree",
+        "0x378aED3bA912Ce77C3C66155961A7e61C2fE8F3B": "disagree",
+        "0x63d72fE364368491E62a42B9C73c317Ce1ca8434": "idle",
+        "0xCe0B66448435cA53665C954705Abd753515594Cf": "disagree",
+        "0xcab45E3fe9cC9592B5C378E47734E022b7Df80c9": "idle"
+      },
+      "validatorCount": 4,
+      "error": null
     }
   },
   "rpcPreflight": {
     "chainId": "0xf22f",
     "gasPrice": "0x0",
-    "checkedAt": "2026-10-30T09:06:47.391Z"
+    "checkedAt": "2026-10-30T09:12:36.457Z"
   },
   "evidenceRef": "f9e37bf76a59ca17b4b75b8fb3822c95bbe8287e",
-  "updatedAt": "2026-10-30T09:06:47.626Z",
+  "updatedAt": "2026-10-30T09:14:27.720Z",
   "deployerAddress": "0x4Ba2cd577256a2c4bA51144E76412035CB973E00",
-  "contractAddress": "0x21c9A008551188B42Fe961938e055691598a85e8"
+  "contractAddress": "0x21c9A008551188B42Fe961938e055691598a85e8",
+  "baselineState": {
+    "id": "HLS-2026-0104",
+    "lead_author": "Heliosophia synthetic acceptance fixture",
+    "creator": "0x4Ba2cd577256a2c4bA51144E76412035CB973E00",
+    "title": "Synthetic structural benchmark: controlled acceptance fixture",
+    "preprint_url": "https://raw.githubusercontent.com/gqzy1/heliosophia-genlayer-protocol/f9e37bf76a59ca17b4b75b8fb3822c95bbe8287e/public/evidence/preprint.txt",
+    "target_metric_clause": "Across five seeds, backbone RMSD must be <= 1.26 Angstrom and compute reduction >= 38 percent on the synthetic target.",
+    "royalty_pool_usdc": 80000,
+    "replicator_share_bps": 2000,
+    "novelty_tier": "DERIVATIVE",
+    "epistemic_confidence_bps": 7600,
+    "methodology_summary": "A synthetic controlled acceptance fixture specifies that a method must achieve backbone RMSD <= 1.26 Angstrom and compute reduction >= 38 percent against a fixture baseline across five independent seeds, serving as an integration-test input rather than a real scientific discovery.",
+    "preprint_sha256": "10862ba20088193744a5a54de7ec3a6af682fe31b836262689f0cbda6f3128d6",
+    "settlement_mode": "ACCOUNTING_ONLY_NO_TOKEN_TRANSFER",
+    "status": "OPEN_FOR_REPLICATION",
+    "replication_count": 0,
+    "author_royalty_released": 0,
+    "replicator_royalty_released": 0,
+    "last_verdict": "BASELINE_INDEXED"
+  }
 }

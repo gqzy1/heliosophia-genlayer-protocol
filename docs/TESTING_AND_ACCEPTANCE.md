@@ -12,7 +12,7 @@ These tests do not claim to run a real GenVM or establish validator agreement. L
 
 ## Frontend preservation
 
-`frontend-integrity.json` records SHA-256 values from the original source package. `node scripts/verify_frontend_integrity.mjs` requires the original file set and exact bytes for all 11 protected frontend files. Only `src/config/deployment.json` may change to contain verified deployment data. The original `npm run build` command is used unchanged.
+`frontend-integrity.json` records the reviewed v2 frontend baseline. The uploaded source checksums are retained in `docs/evidence/frontend-v2-upload-sha256.json`. Seven frontend files are unchanged byte-for-byte from the v2 ZIP, including CSS, Canvas, sound, architecture, sample data, types and entry point. The four integration files contain targeted functional fixes and one matching telemetry URL input; the deployment configuration contains verified chain data. No visual component, theme, animation or sound engine was removed or replaced. The original `npm run build` command remains unchanged.
 
 ## Live integration
 
@@ -24,7 +24,7 @@ The public evidence is a controlled synthetic fixture. Its purpose is to verify 
 
 The GitHub Actions workflow repeats production-source unit tests, checks frontend preservation, executes `npm run build`, and publishes the complete static output to GitHub Pages. Internal handoff files, dependencies, local environments, and private keys are excluded from publication.
 
-## Verified Studionet record — 2026-10-30
+## Archived v1 Studionet record — 2026-10-30
 
 Contract: `0x98E0fda73CD21b83f3A55491E64C03D650091029`. Chain ID: **61999**. Gas price: **0**.
 
@@ -38,7 +38,7 @@ Deployment, registration, and replication each reached `FINALIZED`, returned suc
 
 Readback: `get_discovery_count() = 1`; `replication_count = 1`; `status = REPLICATED_VERIFIED`; ECI **9550 bps**; accounting allocations **64000 / 16000**. Source and telemetry SHA-256 values match the committed fixtures.
 
-The [machine-readable proof](../onchain-deployment-proof.json) includes receipts, votes, source hash, baseline, final state, audit, and the zero-gas RPC check. The initial inconclusive attempt is retained in [its separate evidence record](evidence/studionet-attempt-1.json) and is excluded from the successful proof.
+The [archived v1 proof](evidence/studionet-v1-verified.json) includes receipts, votes, source hash, baseline, final state, audit, and the zero-gas RPC check. The initial inconclusive attempt is retained in [its separate evidence record](evidence/studionet-attempt-1.json) and is excluded from the successful proof.
 
 The inputs are labelled synthetic fixtures. These results verify execution of the reported-measurement comparison and accounting policy, not a real scientific experiment, laboratory independence, or a USDC transfer.
 
@@ -53,3 +53,13 @@ The uploaded v2 presentation is retained. Functional corrections connect the inj
 Eight browser-boundary regression tests cover provider routing, rejected switches, wrong chain, read-only access, ACCEPTED rejection, failed execution, readback mismatch and successful lifecycle. These mocks complement the real chain evidence; they do not prove wallet extension signing.
 
 New v2 deployment: `0xf0C3D7e7a4c31fda6a07ED96575f15a8Ac86f240`. All deployment, registration and replication receipts are finalized successfully with majority agreement; see the current root proof. Previous verified v1 evidence is archived separately.
+
+## Verified browser lifecycle
+
+The browser UI connected a generated SDK signer, registered `HLS-1793641677192-5aa1fa64`, waited for successful FINALIZED majority execution and verified its baseline readback. The same UI then submitted the public synthetic replication telemetry and verified FINALIZED execution and readback: `REPLICATED_VERIFIED`, 9550 ECI basis points, replication count 1, and 48000 / 12000 accounting units. An independent read from the published GitHub Pages inspector returned the same state; the ledger contained two discoveries.
+
+[Browser transaction proof](evidence/browser-lifecycle-v2.json) · [Exported application dossier](evidence/browser-dossier-v2.json) · [Published workflow](https://github.com/gqzy1/heliosophia-genlayer-protocol/actions/runs/41494795824)
+
+This real write-path test used the SDK signer from the managed preview. The identical published build was checked for independent live readback. MetaMask's extension signing was not manually exercised; its provider and network routing are covered by regression tests. All acceptance measurements are synthetic, and royalty figures are ledger accounting only.
+
+![Browser writes finalized and read back](screenshots/heliosophia-v2-browser-finalized.jpg)

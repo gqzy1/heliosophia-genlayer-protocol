@@ -2,7 +2,7 @@
 
 Scientific reproducibility and evidence-backed royalty accounting on **GenLayer Stable Studionet**.
 
-[Open the application](https://gqzy1.github.io/heliosophia-genlayer-protocol/) · [Verified on-chain evidence](onchain-deployment-proof.json)
+[Open the application](https://gqzy1.github.io/heliosophia-genlayer-protocol/) · [Verified on-chain evidence](onchain-deployment-proof.json) · [Browser lifecycle proof](docs/evidence/browser-lifecycle-v2.json)
 
 Verified contract on chain 61999: `0xf0C3D7e7a4c31fda6a07ED96575f15a8Ac86f240`.
 

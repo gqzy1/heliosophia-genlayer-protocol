@@ -5,6 +5,38 @@ export type ReplicationVerdict =
   | 'PARTIAL_CONVERGENCE'
   | 'REPLICATION_REFUTED';
 
+export type WalletSignerMode = 'DISCONNECTED' | 'METAMASK_EIP1193' | 'STUDIONET_SDK_SIGNER';
+
+export interface WalletConnectionState {
+  connected: boolean;
+  mode: WalletSignerMode;
+  address: string | null;
+  chainIdDecimal: number | null;
+  statusMessage: string;
+}
+
+export type OnChainLifecyclePhase =
+  | 'IDLE'
+  | 'CONNECTING_WALLET'
+  | 'SIGNING_AND_SUBMITTING'
+  | 'PENDING_PROPOSING'
+  | 'COMMITTING_EQUIVALENCE'
+  | 'ACCEPTED'
+  | 'FINALIZED'
+  | 'READBACK_VERIFIED'
+  | 'ERROR';
+
+export interface OnChainTransactionLifecycle {
+  phase: OnChainLifecyclePhase;
+  functionName: 'register_discovery' | 'submit_replication_proof' | 'deployContract' | null;
+  discoveryId: string | null;
+  txHash: string | null;
+  receiptStatus: string | null;
+  readbackDataJson: string | null;
+  errorMessage: string | null;
+  updatedAtIso: string | null;
+}
+
 export interface EpistemicValidator {
   id: string;
   designation: string;

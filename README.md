@@ -4,15 +4,19 @@ Scientific reproducibility and evidence-backed royalty accounting on **GenLayer 
 
 [Open the application](https://gqzy1.github.io/heliosophia-genlayer-protocol/) · [Verified on-chain evidence](onchain-deployment-proof.json)
 
-Verified contract on chain 61999: `0x98E0fda73CD21b83f3A55491E64C03D650091029`.
+Verified contract on chain 61999: `0xf0C3D7e7a4c31fda6a07ED96575f15a8Ac86f240`.
 
 Heliosophia records a falsifiable research claim, commits its source with SHA-256, and compares submitted replication evidence against the declared tolerance. GenLayer validators independently evaluate fetched evidence before the contract updates its epistemic index and accounting allocations.
 
 ## Experience
 
-The original Swiss archival interface combines warm paper and mineral pigments, a high-DPI Canvas astrolabe, Alabaster and Nocturne themes, English and Chinese text, reduced-motion controls, and an optional mechanical sound engine. The frontend is preserved byte-for-byte, with `src/config/deployment.json` as the sole deployment writeback file.
+The Swiss archival interface retains its warm paper palette, high-DPI Canvas astrolabe, Alabaster and Nocturne themes, bilingual text, reduced-motion controls, and mechanical sound engine.
 
-The interactive replication workbench is a **browser-local demonstration**. A live deployment banner identifies the separately verified Studionet contract; it does not turn local workbench actions into blockchain transactions. The abbreviated contract excerpt in the inspector is illustrative; the canonical executable source is [contracts/heliosophia_ledger.py](contracts/heliosophia_ledger.py).
+The v2 workbench signs real transactions using an EIP-1193 wallet on chain 61999 or a browser-generated GenLayer SDK signer. Registration and replication wait for **FINALIZED, successful leader execution and majority agreement**, then verify the discovery readback. The inspector can query count and individual records, or deploy the canonical contract source. No ACCEPTED fallback is represented as finality.
+
+To try the complete flow, connect a signer, register a new discovery using the default explicitly synthetic source and metric clause, then submit its replication telemetry using the public telemetry URL field. Readback JSON and transaction hashes appear in the lifecycle panel and dossier export. Existing editorial samples illustrate the visual model; they are not automatically registered on-chain. A matching evidence digest cannot be replayed on the same discovery.
+
+SDK signer keys stay in this browser's local storage. Use this convenience signer only for the free Studionet; do not import or fund a valuable wallet. Injected-wallet transactions require the wallet's own signature approval. Displayed royalty amounts are accounting units, not USDC transfers. The live readback panel is authoritative; the animated instrument is a presentation of the selected scenario.
 
 ## Contract
 

@@ -18,4 +18,4 @@ for (const [path, hash] of Object.entries(original)) {
   assert.equal(actual, hash, `Protected frontend changed: ${path}`);
   preserved++;
 }
-console.log(`${preserved} protected frontend files match the original ZIP byte-for-byte. Only deployment.json may receive verified on-chain configuration.`);
+console.log(`${preserved} protected frontend files match the reviewed v2 source baseline byte-for-byte. deployment.json accepts verified chain configuration.`);

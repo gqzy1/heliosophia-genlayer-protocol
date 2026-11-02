@@ -45,6 +45,9 @@ jobs:
       - name: Test Studio receipt selection
         run: node --test scripts/test_studionet_receipt.mjs
 
+      - name: Test browser wallet and finality boundaries
+        run: node --test scripts/test_browser_chain.mjs
+
       - name: Verify protected frontend integrity
         run: node scripts/verify_frontend_integrity.mjs
 

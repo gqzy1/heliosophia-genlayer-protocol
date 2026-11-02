@@ -4,43 +4,43 @@
   "sourceSha256": "ff11a349ae9ca133666a4d2cac53d309997cbd7385bfeea3ae82bddfc1ba182c",
   "discoveryId": "HLS-2026-0104",
   "transactions": {
-    "deployContract": "0x4a3d7304125fde7aa50abed56098d48f303b5d2e9320c8f20f14aa0d928d8e2a",
-    "registerDiscovery": "0x9ccfd4e292701dd1e3124d734b76f62b0793a988421c9b070b5816314d4cb75b",
-    "submitReplicationProof": "0x5acb862b045765a35498f1d712bdca71c279abae0ff44ad5c0756cb65fea686f"
+    "deployContract": "0x631cb84118373e87e7a7d1e6d8a33fde6ceaad4a95d237aeb166daf13844803c",
+    "registerDiscovery": "0xee0a19882a08a922c96c3e2191d846b6109a06f891025a84e60ce33469551996",
+    "submitReplicationProof": "0x2fdbdeb5a425c795e5f66b4dc4eac0054f4ea4b3532542ad5246bac62192a5fd"
   },
   "receipts": {
     "deployContract": {
-      "hash": "0x4a3d7304125fde7aa50abed56098d48f303b5d2e9320c8f20f14aa0d928d8e2a",
+      "hash": "0x631cb84118373e87e7a7d1e6d8a33fde6ceaad4a95d237aeb166daf13844803c",
       "status": "FINALIZED",
       "executionResult": "SUCCESS",
       "returnStatus": "return",
       "successful": true,
-      "contractAddress": "0x98E0fda73CD21b83f3A55491E64C03D650091029",
+      "contractAddress": "0xf0C3D7e7a4c31fda6a07ED96575f15a8Ac86f240",
       "votes": {
-        "0x5D9Ee6E9aAF2F0b739314A52dd9Da57cd8866dA8": "agree",
-        "0x5e84e17266a193077728229751aC8A1dD24be146": "idle",
-        "0x9C182DE7F93AdbE8ee3D62570613eC23c5683cAc": "agree",
-        "0xb04cdDC4a6Ff6A0aDF715cfe00Fa307b901cebD4": "idle",
-        "0xe06A34A1eBd398AF3399d08593B8c3C433CdD947": "agree"
+        "0x007d6451555Df7765c707284F844137927aE4e5E": "agree",
+        "0x045291B293B9D68969c18B6637A8258038cf787A": "agree",
+        "0xF7D08d12dB37D3e02D1833b5cB7e56B07F114186": "agree",
+        "0xb9ed1258763dfFC83356b15e8A20236B86E42ba2": "agree",
+        "0xe06A34A1eBd398AF3399d08593B8c3C433CdD947": "idle"
       },
-      "agreeCount": 3,
+      "agreeCount": 4,
       "quorumAgreed": true,
       "validatorCount": 4,
       "error": null
     },
     "registerDiscovery": {
-      "hash": "0x9ccfd4e292701dd1e3124d734b76f62b0793a988421c9b070b5816314d4cb75b",
+      "hash": "0xee0a19882a08a922c96c3e2191d846b6109a06f891025a84e60ce33469551996",
       "status": "FINALIZED",
       "executionResult": "SUCCESS",
       "returnStatus": "return",
       "successful": true,
-      "contractAddress": "0x98E0fda73CD21b83f3A55491E64C03D650091029",
+      "contractAddress": "0xf0C3D7e7a4c31fda6a07ED96575f15a8Ac86f240",
       "votes": {
-        "0x007d6451555Df7765c707284F844137927aE4e5E": "agree",
-        "0x336458747913FE397be82c4F0926ACeB3ab13618": "idle",
         "0x378aED3bA912Ce77C3C66155961A7e61C2fE8F3B": "idle",
-        "0xcab45E3fe9cC9592B5C378E47734E022b7Df80c9": "agree",
-        "0xe06A34A1eBd398AF3399d08593B8c3C433CdD947": "agree"
+        "0x4619C8420D50c9dE477DB2CBb7b4863A041688CB": "agree",
+        "0x4868b172ddEBC18b5219aaCeAB77ae0Df330c83A": "agree",
+        "0x5e84e17266a193077728229751aC8A1dD24be146": "agree",
+        "0xb9ed1258763dfFC83356b15e8A20236B86E42ba2": "disagree"
       },
       "agreeCount": 3,
       "quorumAgreed": true,
@@ -48,18 +48,18 @@
       "error": null
     },
     "submitReplicationProof": {
-      "hash": "0x5acb862b045765a35498f1d712bdca71c279abae0ff44ad5c0756cb65fea686f",
+      "hash": "0x2fdbdeb5a425c795e5f66b4dc4eac0054f4ea4b3532542ad5246bac62192a5fd",
       "status": "FINALIZED",
       "executionResult": "SUCCESS",
       "returnStatus": "return",
       "successful": true,
-      "contractAddress": "0x98E0fda73CD21b83f3A55491E64C03D650091029",
+      "contractAddress": "0xf0C3D7e7a4c31fda6a07ED96575f15a8Ac86f240",
       "votes": {
-        "0x378aED3bA912Ce77C3C66155961A7e61C2fE8F3B": "idle",
-        "0x4441Ebe37E72c039B73f1D6CF8C6DEe277FE547a": "agree",
-        "0x5D9Ee6E9aAF2F0b739314A52dd9Da57cd8866dA8": "agree",
-        "0xF7D08d12dB37D3e02D1833b5cB7e56B07F114186": "agree",
-        "0xe06A34A1eBd398AF3399d08593B8c3C433CdD947": "idle"
+        "0x4868b172ddEBC18b5219aaCeAB77ae0Df330c83A": "agree",
+        "0x5D9Ee6E9aAF2F0b739314A52dd9Da57cd8866dA8": "idle",
+        "0x63d72fE364368491E62a42B9C73c317Ce1ca8434": "agree",
+        "0xB4EE99165ffe987E64B7b72e45a753309c501eef": "idle",
+        "0xCe0B66448435cA53665C954705Abd753515594Cf": "agree"
       },
       "agreeCount": 3,
       "quorumAgreed": true,
@@ -67,19 +67,18 @@
       "error": null
     }
   },
-  "evidenceRef": "f9e37bf76a59ca17b4b75b8fb3822c95bbe8287e",
-  "previousAttempt": "docs/evidence/studionet-attempt-1.json",
   "rpcPreflight": {
     "chainId": "0xf22f",
     "gasPrice": "0x0",
-    "checkedAt": "2026-10-30T14:19:24.210Z"
+    "checkedAt": "2026-11-02T17:43:01.822Z"
   },
-  "deployerAddress": "0x94dBAaD698606d0D8090CE76055791C8175fd7FD",
-  "contractAddress": "0x98E0fda73CD21b83f3A55491E64C03D650091029",
+  "evidenceRef": "f9e37bf76a59ca17b4b75b8fb3822c95bbe8287e",
+  "deployerAddress": "0x855CDA44cd803770c2acD6Fa5e9d7DcCC8B4A223",
+  "contractAddress": "0xf0C3D7e7a4c31fda6a07ED96575f15a8Ac86f240",
   "baselineState": {
     "id": "HLS-2026-0104",
     "lead_author": "Heliosophia synthetic acceptance fixture",
-    "creator": "0x94dBAaD698606d0D8090CE76055791C8175fd7FD",
+    "creator": "0x855CDA44cd803770c2acD6Fa5e9d7DcCC8B4A223",
     "title": "Synthetic structural benchmark: controlled acceptance fixture",
     "preprint_url": "https://raw.githubusercontent.com/gqzy1/heliosophia-genlayer-protocol/f9e37bf76a59ca17b4b75b8fb3822c95bbe8287e/public/evidence/preprint.txt",
     "target_metric_clause": "Across five seeds, backbone RMSD must be <= 1.26 Angstrom and compute reduction >= 38 percent on the synthetic target.",
@@ -87,7 +86,7 @@
     "replicator_share_bps": 2000,
     "novelty_tier": "DERIVATIVE",
     "epistemic_confidence_bps": 7600,
-    "methodology_summary": "The controlled fixture requires a synthetic method to achieve backbone RMSD <= 1.26 Angstrom and compute reduction >= 38 percent across five independent seeds.",
+    "methodology_summary": "该合成基准夹具要求一种合成方法在五个独立种子下均达到主链 RMSD ≤ 1.26 埃、相对夹具基线计算削减 ≥ 38%，两项限值须在全部五次运行中同时满足。",
     "preprint_sha256": "10862ba20088193744a5a54de7ec3a6af682fe31b836262689f0cbda6f3128d6",
     "settlement_mode": "ACCOUNTING_ONLY_NO_TOKEN_TRANSFER",
     "status": "OPEN_FOR_REPLICATION",
@@ -97,5 +96,5 @@
     "last_verdict": "BASELINE_INDEXED"
   },
   "complete": true,
-  "updatedAt": "2026-10-30T14:22:31.974Z"
+  "updatedAt": "2026-11-02T17:45:39.645Z"
 }

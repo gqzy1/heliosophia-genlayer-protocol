@@ -1,7 +1,7 @@
 {
   "name": "heliosophia-genlayer-protocol",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "HELIOSOPHIA // Autonomous Scientific Reproducibility, Prior-Art Epistemic Synthesis & Dynamic IP Royalty Protocol on GenLayer Stable Studionet (Chain ID: 61999)",
   "type": "module",
   "scripts": {

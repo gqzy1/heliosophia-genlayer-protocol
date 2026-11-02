@@ -3,8 +3,14 @@ import {
   EPISTEMIC_VALIDATOR_COMMITTEE,
   SCIENTIFIC_DISCOVERIES,
 } from './data/discoveries';
-import { EpistemicValidator, ScientificDiscovery } from './types/heliosophia';
 import {
+  EpistemicValidator,
+  ScientificDiscovery,
+  WalletConnectionState,
+} from './types/heliosophia';
+import {
+  connectMetaMaskWallet,
+  connectStudionetSdkSigner,
   INITIAL_DEPLOYMENT_BRIDGE,
   probeStudionetEndpoint,
   STUDIONET_CHAIN_CONFIG,
@@ -33,6 +39,14 @@ export default function App() {
   const [boundContractAddr, setBoundContractAddr] = useState<string>(
     INITIAL_DEPLOYMENT_BRIDGE.contractAddress || ''
   );
+  const [wallet, setWallet] = useState<WalletConnectionState>({
+    connected: false,
+    mode: 'DISCONNECTED',
+    address: null,
+    chainIdDecimal: null,
+    statusMessage: 'Wallet disconnected',
+  });
+  const [walletError, setWalletError] = useState<string | null>(null);
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -45,6 +59,27 @@ export default function App() {
     if (darkMode) root.classList.add('dark');
     else root.classList.remove('dark');
   }, [darkMode]);
+
+  const handleConnectMetaMask = async () => {
+    soundInstrument.playApertureClick();
+    setWalletError(null);
+    try {
+      const state = await connectMetaMaskWallet();
+      setWallet(state);
+      soundInstrument.playEpistemicSeal();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'MetaMask connection failed';
+      setWalletError(msg);
+    }
+  };
+
+  const handleConnectSdkSigner = () => {
+    soundInstrument.playApertureClick();
+    setWalletError(null);
+    const state = connectStudionetSdkSigner();
+    setWallet(state);
+    soundInstrument.playEpistemicSeal();
+  };
 
   const triggerAuditSimulation = (mode: 'REPLICATED' | 'REFUTED') => {
     soundInstrument.playApertureClick();
@@ -64,15 +99,15 @@ export default function App() {
   };
 
   const handleRegisterCustom = (custom: ScientificDiscovery) => {
-    setDiscoveries((prev) => [custom, ...prev]);
+    setDiscoveries((prev) => [custom, ...prev.filter(item => item.id !== custom.id)]);
     setActiveDiscovery(custom);
     setAuditMode('REPLICATED');
-    setAuditStage(5);
+    setAuditStage(0);
   };
 
   return (
     <div className="min-h-screen bg-alabaster dark:bg-nocturneBg text-carbon dark:text-alabaster swiss-grid-bg transition-colors">
-      {/* Top Archival Telemetry & Instrument Header */}
+      {/* Top Archival Telemetry, Wallet & Instrument Header */}
       <header className="sticky top-0 z-30 border-b border-hairline dark:border-nocturneRule bg-alabaster/95 dark:bg-nocturneBg/95 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -88,13 +123,35 @@ export default function App() {
             </div>
           </div>
 
-          {/* Right Instrument Controls */}
+          {/* Right Wallet & Instrument Controls */}
           <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
+            {wallet.connected && wallet.address ? (
+              <span className="px-2.5 py-1 border border-verdigris bg-verdigris/10 text-verdigris font-semibold text-[11px]">
+                {wallet.mode === 'METAMASK_EIP1193' ? 'METAMASK' : 'SDK SIGNER'}:{' '}
+                {wallet.address.slice(0, 6)}...{wallet.address.slice(-4)}
+              </span>
+            ) : (
+              <>
+                <button
+                  onClick={handleConnectMetaMask}
+                  className="px-2.5 py-1 bg-vermilion text-alabaster font-semibold text-[11px] hover:opacity-90 transition"
+                >
+                  {lang === 'en' ? 'Connect Wallet (61999)' : '连接钱包 (61999)'}
+                </button>
+                <button
+                  onClick={handleConnectSdkSigner}
+                  className="px-2.5 py-1 border border-carbon dark:border-alabaster bg-linen dark:bg-nocturneSurface text-[11px] hover:border-vermilion transition"
+                >
+                  {lang === 'en' ? 'Use SDK Signer' : '启用 SDK 签名器'}
+                </button>
+              </>
+            )}
+
             <span className="px-2.5 py-1 border border-hairline dark:border-nocturneRule bg-linen dark:bg-nocturneSurface text-[11px]">
               RPC:{' '}
               {rpcTelemetry?.online
                 ? `ONLINE (${rpcTelemetry.latencyMs}ms)`
-                : 'LOCAL GENVM VERIFIED'}
+                : 'STUDIONET 61999'}
             </span>
 
             <button
@@ -136,12 +193,23 @@ export default function App() {
           </div>
         </div>
 
+        {walletError && (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-1.5 bg-vermilion/10 border-t border-vermilion font-mono text-[11px] text-vermilion flex items-center justify-between">
+            <span>{walletError}</span>
+            <button onClick={handleConnectSdkSigner} className="underline font-semibold ml-4">
+              {lang === 'en'
+                ? 'Switch to Instant GenLayer SDK Signer →'
+                : '一键切换至内置 GenLayer SDK 签名器 →'}
+            </button>
+          </div>
+        )}
+
         {/* Navigation Monograph Bar */}
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 border-t border-hairline dark:border-nocturneRule grid grid-cols-2 sm:grid-cols-4 font-mono text-xs">
           {[
             { id: 'FOLIO', labelEn: '§ 01 // CARTOGRAPHY & FOLIOS', labelZh: '§ 01 // 认知星图与文献档案' },
-            { id: 'WORKBENCH', labelEn: '§ 02 // REPLICATION STUDIO', labelZh: '§ 02 // 科学复现与版税工作台' },
-            { id: 'CONTRACT', labelEn: '§ 03 // GENVM CONTRACT & RPC', labelZh: '§ 03 // 智能合约与链上终端' },
+            { id: 'WORKBENCH', labelEn: '§ 02 // REPLICATION STUDIO (ON-CHAIN)', labelZh: '§ 02 // 链上科学复现与版税工作台' },
+            { id: 'CONTRACT', labelEn: '§ 03 // GENVM CONTRACT & INSPECTOR', labelZh: '§ 03 // 合约部署与链上状态读取' },
             { id: 'GOVERNANCE', labelEn: '§ 04 // ARCHITECTURE & ROADMAP', labelZh: '§ 04 // 架构机制与路线图' },
           ].map((tab) => (
             <button
@@ -180,13 +248,13 @@ export default function App() {
           <div className="lg:col-span-4 space-y-2 border-l border-hairline dark:border-nocturneRule pl-4">
             <p className="text-xs sm:text-sm text-graphite dark:text-stone-300 leading-relaxed">
               {lang === 'en'
-                ? 'Heliosophia binds GenLayer Python Intelligent Contracts directly to live scientific preprints and laboratory replication telemetry—replacing static peer-review bottlenecks with Optimistic Democracy equivalence.'
-                : 'Heliosophia 将 GenLayer Python 智能合约直接绑定至实时科学预印本与独立实验室复现遥测，以乐观民主多模型等价原则取代传统静态同行评审瓶颈。'}
+                ? 'Heliosophia binds GenLayer Python Intelligent Contracts directly to live scientific preprints and laboratory replication telemetry—handling the full on-chain lifecycle from Wallet Connection and Transaction Submission to Optimistic Democracy FINALIZED Consensus and State Readback.'
+                : 'Heliosophia 将 GenLayer Python 智能合约直接绑定至实时科学预印本与独立实验室复现遥测，在前端完整闭环处理“连接钱包 → 提交写链交易 → 等待 FINALIZED 乐观民主共识 → 链上状态读回”。'}
             </p>
-            <div className="font-mono text-[11px] text-vermilion">
+            <div className="font-mono text-[11px] text-vermilion break-all">
               {boundContractAddr
-                ? `ON-CHAIN CONTRACT: ${boundContractAddr}`
-                : 'MODE: VERIFIED GENVM SANDBOX (STUDIONET 61999 READY)'}
+                ? `ACTIVE CONTRACT (61999): ${boundContractAddr}`
+                : 'CONTRACT: MOUNT OR DEPLOY IN § 03 INSPECTOR'}
             </div>
           </div>
         </div>
@@ -256,16 +324,25 @@ export default function App() {
                 </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => triggerAuditSimulation('REPLICATED')}
-                    className="px-3 py-1.5 bg-vermilion text-alabaster font-mono text-xs"
+                    onClick={() => {
+                      soundInstrument.playApertureClick();
+                      setActiveTab('WORKBENCH');
+                    }}
+                    className="px-3 py-1.5 bg-vermilion text-alabaster font-mono text-xs font-semibold"
                   >
-                    {lang === 'en' ? 'Verify Replication' : '验证独立复现'}
+                    {lang === 'en' ? 'Open On-Chain Workbench →' : '打开链上写链工作台 →'}
+                  </button>
+                  <button
+                    onClick={() => triggerAuditSimulation('REPLICATED')}
+                    className="px-3 py-1.5 border border-carbon dark:border-alabaster font-mono text-xs"
+                  >
+                    {lang === 'en' ? 'Preview Convergence' : '预览收敛轨迹'}
                   </button>
                   <button
                     onClick={() => triggerAuditSimulation('REFUTED')}
-                    className="px-3 py-1.5 border border-carbon dark:border-alabaster font-mono text-xs"
+                    className="px-3 py-1.5 border border-hairline dark:border-nocturneRule font-mono text-xs"
                   >
-                    {lang === 'en' ? 'Test Refutation' : '测试证伪罚没'}
+                    {lang === 'en' ? 'Preview Refutation' : '预览证伪畸变'}
                   </button>
                 </div>
               </div>
@@ -319,6 +396,9 @@ export default function App() {
             onRegisterCustomDiscovery={handleRegisterCustom}
             lang={lang}
             boundContractAddress={boundContractAddr || null}
+            wallet={wallet}
+            onConnectMetaMask={handleConnectMetaMask}
+            onConnectSdkSigner={handleConnectSdkSigner}
           />
         )}
 
@@ -328,6 +408,9 @@ export default function App() {
             onRefreshRpc={(m) => probeStudionetEndpoint(m).then(setRpcTelemetry)}
             customContractAddr={boundContractAddr}
             onChangeContractAddr={setBoundContractAddr}
+            wallet={wallet}
+            onConnectMetaMask={handleConnectMetaMask}
+            onConnectSdkSigner={handleConnectSdkSigner}
             lang={lang}
           />
         )}
@@ -338,7 +421,7 @@ export default function App() {
       {/* Archival Colophon Footer */}
       <footer className="max-w-7xl mx-auto px-4 sm:px-6 py-6 border-t border-hairline dark:border-nocturneRule font-mono text-[11px] text-graphite dark:text-stone-400 flex flex-wrap items-center justify-between gap-4">
         <div>
-          HELIOSOPHIA v1.0 // AUTONOMOUS SCIENTIFIC REPRODUCIBILITY & IP ROYALTY LEDGER
+          HELIOSOPHIA v2.0 // AUTONOMOUS SCIENTIFIC REPRODUCIBILITY & IP ROYALTY LEDGER
         </div>
         <div>
           GENLAYER STABLE STUDIONET (CHAIN ID: 61999) • RPC: https://studio.genlayer.com/api

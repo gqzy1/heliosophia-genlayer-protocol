@@ -45,3 +45,11 @@ The inputs are labelled synthetic fixtures. These results verify execution of th
 The [published build](https://github.com/gqzy1/heliosophia-genlayer-protocol/actions/runs/41072038898) passed all checks and deployed successfully. The public page was checked for the mounted contract address and a live `eth_chainId` response of `0xf22f`.
 
 ![Published interface with verified contract binding](screenshots/heliosophia-live-1793370719313.jpg)
+
+## v2 browser integration
+
+The uploaded v2 presentation is retained. Functional corrections connect the injected provider, prevent stale signer selection, reject wrong networks and nonzero gas, require successful finalized majority execution, and verify returned discovery identity and inputs. Browser deployment uses the canonical tested contract instead of a stale embedded source. Registration is added to the local selection only after confirmed readback. Pending write buttons prevent duplicate clicks. A public telemetry URL field supports real replication inputs. The original illustrative instrument remains labelled separately from authoritative live JSON.
+
+Eight browser-boundary regression tests cover provider routing, rejected switches, wrong chain, read-only access, ACCEPTED rejection, failed execution, readback mismatch and successful lifecycle. These mocks complement the real chain evidence; they do not prove wallet extension signing.
+
+New v2 deployment: `0xf0C3D7e7a4c31fda6a07ED96575f15a8Ac86f240`. All deployment, registration and replication receipts are finalized successfully with majority agreement; see the current root proof. Previous verified v1 evidence is archived separately.

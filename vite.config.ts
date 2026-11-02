@@ -5,6 +5,7 @@ export default defineConfig({
   base: './',
   plugins: [react()],
   server: {
+    allowedHosts: ['terminal.local'],
     port: 5173,
     open: true
   }

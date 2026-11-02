@@ -122,7 +122,7 @@ async function main() {
     mode: 'LIVE_STUDIONET_ONCHAIN_BOUND', network: 'GenLayer Stable Studionet', chainId: CHAIN_ID,
     rpcUrl: RPC_URL, contractAddress, deployerAddress: progress.deployerAddress,
     transactions: progress.transactions, lastOnchainState: state, updatedAt: new Date().toISOString(),
-    notice: 'Stable Studionet 61999: deployment and both writes finalized successfully. Evidence uses a clearly labelled synthetic acceptance fixture. Royalty amounts are accounting entries; no USDC is held or transferred. The interactive workbench remains the original local demonstration.',
+    notice: 'Stable Studionet 61999: deployment and both writes finalized successfully. Evidence uses a clearly labelled synthetic acceptance fixture. Royalty amounts are accounting entries; no USDC is held or transferred. The v2 workbench supports browser-signed writes with finalized receipt checks and state readback.',
   };
   const proof = {...config, sourceSha256, evidenceRef: ref, receipts: progress.receipts,
     baselineState: progress.baselineState, replicationAudit: audit, rpcPreflight: progress.rpcPreflight,

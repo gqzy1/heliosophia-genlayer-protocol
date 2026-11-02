@@ -21,4 +21,4 @@ Source text is committed with strict equivalence before source-grounded baseline
 
 The sample 80000-unit pool and 2000-basis-point replicator share produce 64000 author units and 16000 replicator units. These are accounting entries, not token transfers. Repeated distinct successful reports cannot release the pool twice. Lab identity and physical measurements remain external trust assumptions.
 
-The frontend's original workbench remains a local demonstration. The deployment configuration supplies the verified live address and transaction evidence; the frontend does not sign writes.
+The v2 frontend connects a browser wallet or local SDK signer, submits writes, checks finalized successful majority execution, and reads the stored discovery. The inspector uses the canonical production source for browser deployment. Wallet/network changes are checked before each write. Read-only inspection creates no private key. Pending submission buttons are disabled to prevent accidental duplicate clicks.

@@ -1,7 +1,17 @@
 import React, { useState } from 'react';
-import { ScientificDiscovery } from '../types/heliosophia';
+import {
+  OnChainLifecyclePhase,
+  OnChainTransactionLifecycle,
+  ScientificDiscovery,
+  WalletConnectionState,
+} from '../types/heliosophia';
 import { soundInstrument } from '../audio/mechanicalSound';
-import { STUDIONET_CHAIN_CONFIG } from '../config/studionet';
+import {
+  readDiscoveryFromStudionet,
+  registerDiscoveryOnChain,
+  STUDIONET_CHAIN_CONFIG,
+  submitReplicationProofOnChain,
+} from '../config/studionet';
 
 interface Props {
   discovery: ScientificDiscovery;
@@ -11,6 +21,9 @@ interface Props {
   onRegisterCustomDiscovery: (custom: ScientificDiscovery) => void;
   lang: 'en' | 'zh';
   boundContractAddress: string | null;
+  wallet: WalletConnectionState;
+  onConnectMetaMask: () => Promise<void>;
+  onConnectSdkSigner: () => void;
 }
 
 export const ReplicationWorkbench: React.FC<Props> = ({
@@ -21,17 +34,34 @@ export const ReplicationWorkbench: React.FC<Props> = ({
   onRegisterCustomDiscovery,
   lang,
   boundContractAddress,
+  wallet,
+  onConnectMetaMask,
+  onConnectSdkSigner,
 }) => {
   const [customTitle, setCustomTitle] = useState('');
-  const [customUrl, setCustomUrl] = useState('https://arxiv.org/abs/2610.09941');
+  const [customUrl, setCustomUrl] = useState('https://raw.githubusercontent.com/gqzy1/heliosophia-genlayer-protocol/f9e37bf76a59ca17b4b75b8fb3822c95bbe8287e/public/evidence/preprint.txt');
   const [customClause, setCustomClause] = useState(
-    'Independent replication must achieve perplexity <= 5.42 on FineWeb-100B benchmark with >= 25% memory reduction.'
+    'Across five seeds, backbone RMSD must be <= 1.26 Angstrom and compute reduction >= 38 percent on the synthetic target.'
   );
+  const [telemetryUrl, setTelemetryUrl] = useState('https://raw.githubusercontent.com/gqzy1/heliosophia-genlayer-protocol/f9e37bf76a59ca17b4b75b8fb3822c95bbe8287e/public/evidence/replication.json');
   const [customPool, setCustomPool] = useState('60000');
   const [customShareBps, setCustomShareBps] = useState('2000');
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
 
+  const [txLifecycle, setTxLifecycle] = useState<OnChainTransactionLifecycle>({
+    phase: 'IDLE',
+    functionName: null,
+    discoveryId: null,
+    txHash: null,
+    receiptStatus: null,
+    readbackDataJson: null,
+    errorMessage: null,
+    updatedAtIso: null,
+  });
+  const [statusDetail, setStatusDetail] = useState<string>('');
+
+  const isPending = ['SIGNING_AND_SUBMITTING', 'PENDING_PROPOSING', 'COMMITTING_EQUIVALENCE', 'FINALIZED'].includes(txLifecycle.phase);
   const authorPayout =
     auditStage >= 4 && auditMode === 'REPLICATED'
       ? Math.round((discovery.royaltyPoolUsdc * (10000 - discovery.replicatorShareBps)) / 10000)
@@ -41,15 +71,125 @@ export const ReplicationWorkbench: React.FC<Props> = ({
       ? Math.round((discovery.royaltyPoolUsdc * discovery.replicatorShareBps) / 10000)
       : 0;
 
+  /**
+   * Executes real on-chain `submit_replication_proof` via `genlayer-js` `writeContract`,
+   * polls `waitForTransactionReceipt` until `FINALIZED`, and reads back `get_discovery` via `readContract`.
+   */
+  const handleExecuteOnChainReplication = async (mode: 'REPLICATED' | 'REFUTED') => {
+    soundInstrument.playApertureClick();
+
+
+    if (!wallet.connected) {
+      onConnectSdkSigner();
+    }
+
+    const targetAddr = boundContractAddress?.trim() || '';
+    setTxLifecycle({
+      phase: 'SIGNING_AND_SUBMITTING',
+      functionName: 'submit_replication_proof',
+      discoveryId: discovery.id,
+      txHash: null,
+      receiptStatus: null,
+      readbackDataJson: null,
+      errorMessage: null,
+      updatedAtIso: new Date().toISOString(),
+    });
+    setStatusDetail(
+      lang === 'en'
+        ? 'Signing & broadcasting submit_replication_proof transaction to GenLayer Studionet (61999)...'
+        : '正在签名并向 GenLayer Studionet (61999) 广播 submit_replication_proof 交易...'
+    );
+
+    try {
+      const result = await submitReplicationProofOnChain({
+        contractAddress: targetAddr,
+        discoveryId: discovery.id,
+        replicationLab: discovery.replicationLabEn,
+        telemetryUrl: telemetryUrl.trim(),
+        labNotes:
+          mode === 'REPLICATED'
+            ? `Empirical metric ${discovery.replicatedMetricValue} ${discovery.baselineMetricUnit} verified within tolerance.`
+            : `Empirical metric ${discovery.refutedMetricValue} ${discovery.baselineMetricUnit} breached tolerance bounds.`,
+        onPhaseChange: (phase: OnChainLifecyclePhase, detail?: string, hash?: string) => {
+          if (detail) setStatusDetail(detail);
+          setTxLifecycle((prev) => ({
+            ...prev,
+            phase,
+            txHash: hash || prev.txHash,
+            updatedAtIso: new Date().toISOString(),
+          }));
+        },
+      });
+
+      const record = JSON.parse(result.readbackJson);
+      onRunAudit(record.last_verdict === 'REPLICATION_REFUTED' ? 'REFUTED' : 'REPLICATED');
+      soundInstrument.playEpistemicSeal();
+      setTxLifecycle({
+        phase: 'READBACK_VERIFIED',
+        functionName: 'submit_replication_proof',
+        discoveryId: discovery.id,
+        txHash: result.txHash,
+        receiptStatus: result.receiptStatus,
+        readbackDataJson: result.readbackJson,
+        errorMessage: null,
+        updatedAtIso: new Date().toISOString(),
+      });
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : 'On-chain transaction failed';
+      setTxLifecycle((prev) => ({
+        ...prev,
+        phase: 'ERROR',
+        errorMessage: errMsg,
+        updatedAtIso: new Date().toISOString(),
+      }));
+    }
+  };
+
+  /**
+   * Reads the latest discovery state directly from Studionet via `client.readContract('get_discovery')`.
+   */
+  const handleManualReadback = async () => {
+    soundInstrument.playApertureClick();
+    const targetAddr = boundContractAddress?.trim() || '';
+    try {
+      setStatusDetail(`Calling client.readContract('get_discovery', ['${discovery.id}'])...`);
+      const jsonStr = await readDiscoveryFromStudionet(targetAddr, discovery.id);
+      setTxLifecycle((prev) => ({
+        ...prev,
+        phase: 'READBACK_VERIFIED',
+        discoveryId: discovery.id,
+        readbackDataJson: jsonStr,
+        errorMessage: null,
+        updatedAtIso: new Date().toISOString(),
+      }));
+      soundInstrument.playEpistemicSeal();
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : 'readContract failed';
+      setTxLifecycle((prev) => ({
+        ...prev,
+        phase: 'ERROR',
+        errorMessage: errMsg,
+        updatedAtIso: new Date().toISOString(),
+      }));
+    }
+  };
+
   const handleExportDossier = () => {
     soundInstrument.playApertureClick();
     const dossier = {
-      protocol: 'HELIOSOPHIA // Epistemic Reproducibility & IP Royalty Ledger v1.0',
+      protocol: 'HELIOSOPHIA // Epistemic Reproducibility & IP Royalty Ledger v2.0',
       network: {
         name: STUDIONET_CHAIN_CONFIG.networkName,
         chainId: STUDIONET_CHAIN_CONFIG.chainIdDecimal,
         rpcEndpoint: STUDIONET_CHAIN_CONFIG.rpcEndpoint,
-        boundContractAddress: boundContractAddress || 'LOCAL_GENVM_VERIFIED_SIMULATION',
+        boundContractAddress: boundContractAddress || null,
+        connectedSigner: wallet.address,
+      },
+      onChainTransaction: {
+        txHash: txLifecycle.txHash,
+        receiptStatus: txLifecycle.receiptStatus,
+        lifecyclePhase: txLifecycle.phase,
+        readbackDataJson: txLifecycle.readbackDataJson,
       },
       discoveryFolio: discovery.id,
       title: discovery.titleEn,
@@ -80,7 +220,7 @@ export const ReplicationWorkbench: React.FC<Props> = ({
     URL.revokeObjectURL(url);
   };
 
-  const handleCreateCustom = (e: React.FormEvent) => {
+  const handleCreateCustom = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
     setFormSuccess(null);
@@ -119,7 +259,9 @@ export const ReplicationWorkbench: React.FC<Props> = ({
       return;
     }
 
-    const newId = `HLS-2026-0${Math.floor(300 + Math.random() * 600)}`;
+    const newId = `HLS-${Date.now()}-${Array.from(crypto.getRandomValues(new Uint8Array(4)), b => b.toString(16).padStart(2, '0')).join('')}`;
+    const signerAddr = wallet.address || '0x7F4C...91A0 (Researcher Signer)';
+
     const customItem: ScientificDiscovery = {
       id: newId,
       folioNumber: `FOLIO // CUSTOM-${newId.slice(-4)}`,
@@ -127,7 +269,7 @@ export const ReplicationWorkbench: React.FC<Props> = ({
       domainZh: '自定义科学复现契约',
       titleEn: customTitle.trim(),
       titleZh: customTitle.trim(),
-      leadAuthor: '0x7F4C...91A0 (Researcher Signer)',
+      leadAuthor: signerAddr,
       institutionEn: 'Independent Open-Science Laboratory',
       institutionZh: '独立开放科学实验室',
       preprintUrl: customUrl.trim(),
@@ -147,7 +289,7 @@ export const ReplicationWorkbench: React.FC<Props> = ({
       refutedMetricValue: 7.95,
       replicationLabEn: 'GenLayer Decentralized Replicator Quorum',
       replicationLabZh: 'GenLayer 去中心化独立复现节点联盟',
-      replicationTelemetryUrl: `${customUrl.trim().replace(/\/$/, '')}/telemetry-repro.json`,
+      replicationTelemetryUrl: telemetryUrl.trim(),
       replicationTelemetrySha256: 'f0e1d2c3b4a5968778695a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d',
       replicationTelemetryJson: JSON.stringify(
         {
@@ -184,15 +326,118 @@ export const ReplicationWorkbench: React.FC<Props> = ({
         '独立复现遥测超出容差走廊，认知置信度（ECI）已执行罚没下调。',
     };
 
-    soundInstrument.playEpistemicSeal();
-    onRegisterCustomDiscovery(customItem);
-    setCustomTitle('');
-    setFormSuccess(
-      lang === 'en'
-        ? `Registered Folio ${newId} and switched active workbench!`
-        : `已成功登记档案 ${newId} 并切换至当前复现工作台！`
-    );
+
+
+    // If a Studionet contract is mounted, also submit `register_discovery` on-chain via writeContract -> FINALIZED -> readContract
+    if (boundContractAddress && boundContractAddress.startsWith('0x')) {
+      if (!wallet.connected) {
+        onConnectSdkSigner();
+      }
+      setTxLifecycle({
+        phase: 'SIGNING_AND_SUBMITTING',
+        functionName: 'register_discovery',
+        discoveryId: newId,
+        txHash: null,
+        receiptStatus: null,
+        readbackDataJson: null,
+        errorMessage: null,
+        updatedAtIso: new Date().toISOString(),
+      });
+      try {
+        const res = await registerDiscoveryOnChain({
+          contractAddress: boundContractAddress,
+          discoveryId: newId,
+          leadAuthor: signerAddr,
+          title: customItem.titleEn,
+          preprintUrl: customItem.preprintUrl,
+          targetMetricClause: customItem.targetMetricClauseEn,
+          royaltyPoolUsdc: poolVal,
+          replicatorShareBps: shareVal,
+          onPhaseChange: (phase, detail, hash) => {
+            if (detail) setStatusDetail(detail);
+            setTxLifecycle((prev) => ({
+              ...prev,
+              phase,
+              txHash: hash || prev.txHash,
+              updatedAtIso: new Date().toISOString(),
+            }));
+          },
+        });
+        onRegisterCustomDiscovery(customItem);
+        setCustomTitle('');
+        soundInstrument.playEpistemicSeal();
+        setTxLifecycle({
+          phase: 'READBACK_VERIFIED',
+          functionName: 'register_discovery',
+          discoveryId: newId,
+          txHash: res.txHash,
+          receiptStatus: res.receiptStatus,
+          readbackDataJson: res.readbackJson,
+          errorMessage: null,
+          updatedAtIso: new Date().toISOString(),
+        });
+        setFormSuccess(
+          lang === 'en'
+            ? `On-Chain Tx FINALIZED (${res.txHash.slice(0, 14)}...) & Readback verified for ${newId}!`
+            : `链上交易已 FINALIZED (${res.txHash.slice(0, 14)}...) 并完成 ${newId} 状态读回！`
+        );
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'On-chain registration failed';
+        setTxLifecycle((prev) => ({
+          ...prev,
+          phase: 'ERROR',
+          errorMessage: msg,
+          updatedAtIso: new Date().toISOString(),
+        }));
+      }
+    } else {
+      soundInstrument.playEpistemicSeal();
+      setFormSuccess(
+        lang === 'en'
+          ? `Prepared Folio ${newId}. Mount a contract address in § 03 Inspector to broadcast register_discovery on-chain.`
+          : `已准备档案 ${newId}。在 § 03 挂载合约地址后可直接向链上广播 register_discovery 交易。`
+      );
+    }
   };
+
+  const lifecyclePillars = [
+    {
+      step: '01 // WALLET CONNECTION',
+      done: wallet.connected,
+      active: txLifecycle.phase === 'CONNECTING_WALLET',
+      desc: wallet.connected
+        ? `${wallet.mode}: ${wallet.address?.slice(0, 8)}...${wallet.address?.slice(-4)}`
+        : 'Click Connect Wallet or SDK Signer',
+    },
+    {
+      step: '02 // SUBMIT TX (writeContract)',
+      done: Boolean(txLifecycle.txHash),
+      active:
+        txLifecycle.phase === 'SIGNING_AND_SUBMITTING' ||
+        txLifecycle.phase === 'PENDING_PROPOSING',
+      desc: txLifecycle.txHash
+        ? `Tx: ${txLifecycle.txHash.slice(0, 12)}...`
+        : 'Calls submit_replication_proof / register_discovery',
+    },
+    {
+      step: '03 // CONSENSUS FINALIZED',
+      done:
+        txLifecycle.phase === 'FINALIZED' || txLifecycle.phase === 'READBACK_VERIFIED',
+      active: txLifecycle.phase === 'COMMITTING_EQUIVALENCE',
+      desc: txLifecycle.receiptStatus
+        ? `Status: ${txLifecycle.receiptStatus}`
+        : 'Polls waitForTransactionReceipt -> FINALIZED',
+    },
+    {
+      step: '04 // ON-CHAIN READBACK (readContract)',
+      done: txLifecycle.phase === 'READBACK_VERIFIED',
+      active: false,
+      desc:
+        txLifecycle.phase === 'READBACK_VERIFIED'
+          ? `Verified get_discovery('${txLifecycle.discoveryId}')`
+          : 'Reads finalized TreeMap state from Studionet',
+    },
+  ];
 
   const steps = [
     {
@@ -251,6 +496,98 @@ export const ReplicationWorkbench: React.FC<Props> = ({
 
   return (
     <div className="space-y-8">
+      {/* Live On-Chain Transaction Lifecycle Bar (Connect Wallet -> Submit -> FINALIZED -> Readback) */}
+      <div className="p-5 border border-carbon dark:border-alabaster bg-linen/90 dark:bg-nocturneSurface space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-hairline dark:border-nocturneRule pb-3">
+          <div>
+            <span className="font-mono text-xs uppercase tracking-widest text-vermilion font-semibold">
+              § LIVE STUDIONET (61999) TRANSACTION LIFECYCLE ENGINE
+            </span>
+            <h4 className="font-serif text-xl mt-0.5">
+              {lang === 'en'
+                ? 'Connect Wallet → Submit writeContract → Poll FINALIZED → Readback get_discovery'
+                : '连接钱包 → 提交 writeContract 交易 → 轮询 FINALIZED 终局 → readContract 读回链上状态'}
+            </h4>
+          </div>
+
+          <div className="flex flex-wrap gap-2 font-mono text-xs">
+            {!wallet.connected ? (
+              <>
+                <button
+                  onClick={onConnectMetaMask}
+                  className="px-3 py-1.5 bg-vermilion text-alabaster font-semibold"
+                >
+                  {lang === 'en' ? '1. Connect MetaMask (61999)' : '1. 连接 MetaMask (61999)'}
+                </button>
+                <button
+                  onClick={onConnectSdkSigner}
+                  className="px-3 py-1.5 border border-carbon dark:border-alabaster"
+                >
+                  {lang === 'en' ? '1. Connect SDK Signer' : '1. 连接 SDK 签名器'}
+                </button>
+              </>
+            ) : (
+              <span className="px-3 py-1.5 border border-verdigris text-verdigris font-semibold">
+                SIGNER READY: {wallet.address?.slice(0, 8)}...{wallet.address?.slice(-4)}
+              </span>
+            )}
+            <button
+              onClick={handleManualReadback}
+              className="px-3 py-1.5 border border-hairline dark:border-nocturneRule bg-alabaster dark:bg-nocturneBg"
+            >
+              {lang === 'en' ? '↻ Read get_discovery() Now' : '↻ 立即读回链上 get_discovery()'}
+            </button>
+          </div>
+        </div>
+
+        {/* 4-Stage On-Chain Lifecycle Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 font-mono text-xs">
+          {lifecyclePillars.map((p) => (
+            <div
+              key={p.step}
+              className={`p-3 border ${
+                p.active
+                  ? 'border-vermilion bg-vermilion/10'
+                  : p.done
+                  ? 'border-verdigris bg-verdigris/10'
+                  : 'border-hairline dark:border-nocturneRule bg-alabaster dark:bg-nocturneBg'
+              }`}
+            >
+              <div className="text-[11px] font-semibold flex items-center justify-between">
+                <span>{p.step}</span>
+                <span>{p.done ? '✓' : p.active ? '⋯' : '○'}</span>
+              </div>
+              <div className="text-[11px] text-graphite dark:text-stone-300 mt-1 truncate">
+                {p.desc}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {statusDetail && (
+          <div className="font-mono text-xs text-graphite dark:text-stone-300">
+            STATUS: <span className="text-carbon dark:text-alabaster font-semibold">{statusDetail}</span>
+          </div>
+        )}
+
+        {txLifecycle.errorMessage && (
+          <div className="p-3 border border-vermilion bg-vermilion/10 font-mono text-xs text-vermilion">
+            ON-CHAIN ERROR: {txLifecycle.errorMessage}
+          </div>
+        )}
+
+        {txLifecycle.readbackDataJson && (
+          <div className="space-y-1">
+            <div className="font-mono text-[11px] uppercase text-verdigris font-semibold">
+              VERIFIED ON-CHAIN READBACK (`client.readContract("get_discovery", ["{txLifecycle.discoveryId}"])`):
+            </div>
+            <pre className="p-3 bg-alabaster dark:bg-nocturneBg border border-verdigris font-mono text-[11px] overflow-x-auto max-h-44">
+              {txLifecycle.readbackDataJson}
+            </pre>
+          </div>
+        )}
+      </div>
+
       {/* Top Action Control Bar */}
       <div className="p-5 border border-hairline dark:border-nocturneRule bg-linen/70 dark:bg-nocturneSurface flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
@@ -268,20 +605,22 @@ export const ReplicationWorkbench: React.FC<Props> = ({
 
         <div className="flex flex-wrap items-center gap-2.5">
           <button
-            onClick={() => onRunAudit('REPLICATED')}
-            className="px-4 py-2.5 bg-vermilion text-alabaster font-mono text-xs uppercase tracking-wider hover:opacity-90 transition"
+            disabled={isPending}
+            onClick={() => handleExecuteOnChainReplication('REPLICATED')}
+            className="px-4 py-2.5 bg-vermilion text-alabaster font-mono text-xs uppercase tracking-wider hover:opacity-90 transition font-semibold"
           >
             {lang === 'en'
-              ? '▶ Run Successful Replication Audit'
-              : '▶ 执行成功复现与版税分账推演'}
+              ? '⛓ Submit Replication Proof On-Chain (writeContract)'
+              : '⛓ 提交复现证明上链 (writeContract → FINALIZED)'}
           </button>
           <button
-            onClick={() => onRunAudit('REFUTED')}
+            disabled={isPending}
+            onClick={() => handleExecuteOnChainReplication('REFUTED')}
             className="px-4 py-2.5 border border-carbon dark:border-alabaster text-carbon dark:text-alabaster font-mono text-xs uppercase tracking-wider hover:bg-carbon hover:text-alabaster dark:hover:bg-alabaster dark:hover:text-carbon transition"
           >
             {lang === 'en'
-              ? '⚡ Simulate Empirical Refutation (Slash ECI)'
-              : '⚡ 模拟复现证伪与置信度罚没'}
+              ? '⚡ Submit Refutation Proof On-Chain (Slash ECI)'
+              : '⚡ 提交实证证伪上链 (罚没 ECI)'}
           </button>
           <button
             onClick={handleExportDossier}
@@ -292,13 +631,17 @@ export const ReplicationWorkbench: React.FC<Props> = ({
         </div>
       </div>
 
+      <label className="block font-mono text-xs text-graphite dark:text-stone-400 mb-6">
+        {lang === 'en' ? 'PUBLIC REPLICATION TELEMETRY URL · synthetic fixture by default' : '公开复现遥测 URL · 默认使用合成测试样本'}
+        <input aria-label="Replication telemetry URL" value={telemetryUrl} onChange={e => setTelemetryUrl(e.target.value)} className="mt-2 w-full px-3 py-2 border border-hairline dark:border-nocturneRule bg-alabaster dark:bg-nocturneBg font-mono text-xs" />
+      </label>
       {/* 5-Stage GenVM Execution Stepper & Live Telemetry Split */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-7 space-y-3">
           <div className="font-mono text-xs uppercase tracking-widest text-graphite dark:text-stone-400">
             {lang === 'en'
-              ? 'GENVM OPTIMISTIC DEMOCRACY PIPELINE (5 STAGES)'
-              : 'GENVM 乐观民主科学复现流水线（5 阶段状态机）'}
+              ? 'ILLUSTRATIVE PIPELINE · LIVE JSON ABOVE IS AUTHORITATIVE'
+              : '五阶段流程示意 · 以上链上 JSON 为准'}
           </div>
           {steps.map((st) => {
             const done = auditStage >= st.idx;
@@ -405,7 +748,7 @@ export const ReplicationWorkbench: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* Custom Discovery Registration Sandbox */}
+      {/* Custom Discovery Registration Sandbox (On-Chain writeContract('register_discovery')) */}
       <form
         onSubmit={handleCreateCustom}
         className="p-6 border border-hairline dark:border-nocturneRule bg-linen/40 dark:bg-nocturneSurface space-y-4"
@@ -413,12 +756,12 @@ export const ReplicationWorkbench: React.FC<Props> = ({
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-hairline dark:border-nocturneRule pb-3">
           <div>
             <span className="font-mono text-xs uppercase tracking-widest text-vermilion">
-              § REGISTER NEW EPISTEMIC DISCOVERY BOND (`register_discovery`)
+              § REGISTER NEW EPISTEMIC DISCOVERY BOND ON-CHAIN (`register_discovery`)
             </span>
             <h4 className="font-serif text-xl mt-0.5">
               {lang === 'en'
-                ? 'Anchor Your Own Preprint & Falsifiable Benchmark Clause'
-                : '登记自定义预印本与可证伪复现契约'}
+                ? 'Submit New Preprint & Falsifiable Clause to Studionet Contract'
+                : '向 Studionet 合约提交新预印本与可证伪复现契约 (`writeContract`)'}
             </h4>
           </div>
           <span className="font-mono text-[11px] text-graphite dark:text-stone-400">
@@ -501,10 +844,13 @@ export const ReplicationWorkbench: React.FC<Props> = ({
             />
           </div>
           <button
+            disabled={isPending}
             type="submit"
-            className="px-5 py-2.5 bg-carbon dark:bg-alabaster text-alabaster dark:text-carbon font-mono text-xs uppercase tracking-wider hover:opacity-90 transition"
+            className="px-5 py-2.5 bg-carbon dark:bg-alabaster text-alabaster dark:text-carbon font-mono text-xs uppercase tracking-wider hover:opacity-90 transition font-semibold"
           >
-            {lang === 'en' ? '+ Anchor Discovery Folio' : '+ 锚定科学发现契约'}
+            {lang === 'en'
+              ? '⛓ Submit register_discovery On-Chain'
+              : '⛓ 提交 register_discovery 上链'}
           </button>
         </div>
       </form>

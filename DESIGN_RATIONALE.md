@@ -1,7 +1,7 @@
-# DESIGN_RATIONALE.md — Gemini's Independent Definition of High-End Digital Product Design
+# Heliosophia visual system
 
-## 1. Why We Rejected the Cliché Web3 Dark-Neon Template
-95% of Web3 and AI products equate "high-end design" with pitch-black backgrounds, purple-to-cyan gradients, glowing neon borders, and floating glassmorphic cards. In Gemini's aesthetic judgment, **true luxury and intellectual authority come from restraint, structural honesty, tactile materiality, and typographic tension—not from visual noise or shader excess.**
+## 1. Archival clarity
+The interface uses restraint, tactile materials and a clear typographic hierarchy to support close reading of scientific claims and their evidence.
 
 Because **HELIOSOPHIA** is an autonomous ledger for scientific reproducibility and empirical truth, its visual language should feel like a **sovereign scientific monograph meets a precision optical instrument from Zurich or Wetzlar**—combining **1960s Swiss International Typographic Style (Josef Müller-Brockmann)**, **Dieter Rams' Braun industrial instrumentation**, and **archival print cartography**.
 

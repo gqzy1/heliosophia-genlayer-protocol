@@ -1,14 +1,15 @@
 {
-  "src/main.tsx": "14a10dee4aaa2130d9f57c136db7f16f95f524d60d77146b17776e91c2ab626c",
-  "src/index.css": "18243db3c5699c22dfffa9d3b2159af7424cfcc42ea32d6b732ffac599375bb6",
-  "src/App.tsx": "bcc8dbdbc7e4033eef437e37f878d55b5024ff7283b298948a12077a46f7493f",
-  "src/components/ContractAndRpcInspector.tsx": "7174fe303f6461eca45acaea299803ac81c7bae83350f010b2ead20da87792f2",
+  "src/App.tsx": "b0b8cce0be1b58f64822c5043d6451c625671d1e444b1b8f19a314bf18d0401f",
+  "src/audio/mechanicalSound.ts": "e77878d96ef22076063f45d3530d04cb2d1fbf67e1e8d104e6f7d15d027a43d4",
   "src/components/ArchitectureAndGovernance.tsx": "773a88c09dea5dc608a25c5356e0e03d4ab21816f560267d06f8255c1d7a6240",
-  "src/components/ReplicationWorkbench.tsx": "42d76855abc557013a0e39b2423ad566e310012b12d66e51e951fdcc718b0244",
-  "src/components/EpistemicCartographyCanvas.tsx": "56974ea51d97203f64b18828b500cbad2f678968ef74c81fa81cd41f2bab69f0",
+  "src/components/ContractAndRpcInspector.tsx": "7174fe303f6461eca45acaea299803ac81c7bae83350f010b2ead20da87792f2",
+  "src/components/EpistemicCartographyCanvas.tsx": "e944f805bbc19be8635da0f8363c7fca755cbb6b15be834f9e3c3220f361d5a4",
+  "src/components/ReplicationWorkbench.tsx": "a816bdc223d116ee4708df8e881327d362e07e5f08cebe21443371013d70cd26",
   "src/config/deployment.json": "47f2193cb511a551be689a37a538bf79ef108d376af4309bc1170c16e847ecfe",
   "src/config/studionet.ts": "064dd5d0b1df066a7bbde888cbb3397ac69a265bd598e3c653ac9d3a2bd51085",
+  "src/data/discoveries.ts": "ece3a94ecf261becda02d8f18941873bb39ef6db1245adab7caf1e70c63310d2",
+  "src/index.css": "18243db3c5699c22dfffa9d3b2159af7424cfcc42ea32d6b732ffac599375bb6",
+  "src/main.tsx": "14a10dee4aaa2130d9f57c136db7f16f95f524d60d77146b17776e91c2ab626c",
   "src/types/heliosophia.ts": "ce35f0f8e8bdf1f7687992c921fda5d7abc4dc8028f962c8d0fc54bc3ca8facf",
-  "src/audio/mechanicalSound.ts": "e77878d96ef22076063f45d3530d04cb2d1fbf67e1e8d104e6f7d15d027a43d4",
-  "src/data/discoveries.ts": "6543588b7e69e3b703aa8d20d96cb94bffc95ddfa6a7d737a6771ca787b121d3"
+  "src/utils/dossier.ts": "6f98d298f50ddde56b10c5503e8004da7b350d5902005fe8441f4a01d664baec"
 }

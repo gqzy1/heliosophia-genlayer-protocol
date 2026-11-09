@@ -680,8 +680,8 @@ export const ReplicationWorkbench: React.FC<Props> = ({
         <div className="lg:col-span-7 space-y-3">
           <div className="font-mono text-xs uppercase tracking-widest text-graphite dark:text-stone-400">
             {lang === 'en'
-              ? `ILLUSTRATIVE PIPELINE · LIVE JSON ABOVE IS AUTHORITATIVE · SIMULATION MODE: ${auditMode}`
-              : `五阶段流程示意 · 以上链上 JSON 为准 · 模拟模式：${auditMode}`}
+              ? `ILLUSTRATIVE PIPELINE · LIVE JSON ABOVE IS AUTHORITATIVE · SIMULATION MODE: ${auditStage > 0 ? auditMode : '—'}`
+              : `五阶段流程示意 · 以上链上 JSON 为准 · 模拟模式：${auditStage > 0 ? auditMode : '—'}`}
           </div>
           {steps.map((st) => {
             const done = auditStage >= st.idx;

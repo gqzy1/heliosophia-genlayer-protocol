@@ -194,7 +194,9 @@ export const EpistemicCartographyCanvas: React.FC<Props> = ({
         h - 14
       );
       // Simulation preview only. PARTIAL leaves the ECI unchanged, so it
-      // shows the initial ECI, never the refuted one.
+      // shows the initial ECI, never the refuted one. Before any simulation
+      // stage has run, no ECI is shown at all: cold start must not display
+      // a number that did not come from a readback.
       const eciCurrent =
         auditStage >= 4
           ? auditMode === 'REPLICATED'
@@ -202,9 +204,9 @@ export const EpistemicCartographyCanvas: React.FC<Props> = ({
             : auditMode === 'PARTIAL'
             ? discovery.initialEciBps
             : discovery.refutedEciBps
-          : discovery.initialEciBps;
+          : null;
       ctx.fillStyle = inkMain;
-      ctx.fillText(`ECI: ${(eciCurrent / 100).toFixed(2)}%`, w - 115, 22);
+      ctx.fillText(`ECI: ${eciCurrent === null ? '— 未读回' : `${(eciCurrent / 100).toFixed(2)}%`}`, w - 115, 22);
 
       ctx.restore();
       if (!reducedMotion) {

@@ -16,7 +16,7 @@ The v2 workbench signs real transactions using an EIP-1193 wallet on chain 61999
 
 To try the complete flow, connect a signer, register a new discovery using the default explicitly synthetic source and metric clause, then submit its replication telemetry using the public telemetry URL field. Readback JSON and transaction hashes appear in the lifecycle panel and dossier export. Existing editorial samples illustrate the visual model; they are not automatically registered on-chain. A matching evidence digest cannot be replayed on the same discovery.
 
-SDK signer keys stay in this browser's local storage. Use this convenience signer only for the free Studionet; do not import or fund a valuable wallet. Injected-wallet transactions require the wallet's own signature approval. Displayed royalty amounts are accounting units, not USDC transfers. The live readback panel is authoritative; the animated instrument is a presentation of the selected scenario.
+SDK signer keys stay in this browser's local storage. Use this convenience signer only for the free Studionet; do not import or fund a valuable wallet. Injected-wallet transactions require the wallet's own signature approval. Displayed royalty amounts are accounting units, not USDC transfers. The live readback panel is authoritative; the animated instrument is a presentation of the selected scenario. Every displayed and exported verdict, ECI, digest, telemetry hash and allocation value comes from the FINALIZED `get_discovery` readback. Before a readback, the interface shows unconfirmed placeholders and the dossier export is disabled. `PARTIAL_CONVERGENCE` is shown as its own outcome: the ECI is unchanged and it unlocks nothing. A real on-chain PARTIAL case is recorded in [docs/evidence/partial-case.json](docs/evidence/partial-case.json).
 
 ## Contract
 
@@ -31,13 +31,20 @@ SDK signer keys stay in this browser's local storage. Use this convenience signe
 
 ```bash
 npm ci
-python3 contracts/test_heliosophia_contract.py
+npm test  # contract tests (registration readback + all three verdicts) and dossier readback tests
 node scripts/verify_frontend_integrity.mjs
 npm run dev
 npm run build
 ```
 
-The Python tests import the production contract with mocked GenVM I/O and storage. They test deterministic logic, not real network consensus.
+The Python tests import the production contract with mocked GenVM I/O and storage. They test deterministic logic, not real network consensus. The dossier tests compile `src/utils/dossier.ts` and assert that the exported dossier takes its verdict, ECI, digest, telemetry hash and allocations from the FINALIZED readback, that PARTIAL_CONVERGENCE unlocks nothing, and that export is refused before a FINALIZED readback.
+
+```bash
+# Real on-chain PARTIAL case (registers a fresh discovery; the submitted
+# HLS-2026-0104 record is untouched). Requires the partial telemetry file
+# to already be on GitHub at the given commit.
+npm run partial-case -- --evidence-ref <public-commit-sha>
+```
 
 ## Deployment
 

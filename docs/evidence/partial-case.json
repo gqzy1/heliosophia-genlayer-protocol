@@ -1,0 +1,121 @@
+{
+  "case": "PARTIAL_CONVERGENCE on-chain case",
+  "network": "GenLayer Stable Studionet",
+  "chainId": 61999,
+  "rpcUrl": "https://studio.genlayer.com/api",
+  "contractAddress": "0xf0C3D7e7a4c31fda6a07ED96575f15a8Ac86f240",
+  "discoveryId": "HLS-2026-1104-PARTIAL",
+  "evidenceRef": "490e18a4dd00619714405e1989901ef896d390cf",
+  "preprintUrl": "https://raw.githubusercontent.com/gqzy1/heliosophia-genlayer-protocol/f9e37bf76a59ca17b4b75b8fb3822c95bbe8287e/public/evidence/preprint.txt",
+  "telemetryUrl": "https://raw.githubusercontent.com/gqzy1/heliosophia-genlayer-protocol/490e18a4dd00619714405e1989901ef896d390cf/public/evidence/replication-partial.json",
+  "transactions": {
+    "registerDiscovery": "0x764495a654db5335c660aa969ffdaf211a00fca1ab09ca09db0caca5adce945c",
+    "submitReplicationProof": "0x72d4556842ebd650cc1de4a1156cb69e5734855f8bc2a7f6dc43206ab0778c10"
+  },
+  "receipts": {
+    "registerDiscovery": {
+      "hash": "0x764495a654db5335c660aa969ffdaf211a00fca1ab09ca09db0caca5adce945c",
+      "status": "FINALIZED",
+      "executionResult": "SUCCESS",
+      "returnStatus": "return",
+      "successful": true,
+      "contractAddress": "0xf0C3D7e7a4c31fda6a07ED96575f15a8Ac86f240",
+      "votes": {
+        "0x29300188B54F5BFEE91542595611603b4B201008": "idle",
+        "0x560FBD37a10bC2B96F118071e922c9106c12Ba1d": "agree",
+        "0x722474B013fA39E5aA8785f927dCeB0e3F89815B": "agree",
+        "0x8ADae333478F9D037c78b0E3E8279DdAAb20a1B3": "agree",
+        "0xf1EAD5E5f876eae701eF1881b42861079cd9A287": "idle"
+      },
+      "agreeCount": 3,
+      "quorumAgreed": true,
+      "validatorCount": 4,
+      "error": null
+    },
+    "submitReplicationProof": {
+      "hash": "0x72d4556842ebd650cc1de4a1156cb69e5734855f8bc2a7f6dc43206ab0778c10",
+      "status": "FINALIZED",
+      "executionResult": "SUCCESS",
+      "returnStatus": "return",
+      "successful": true,
+      "contractAddress": "0xf0C3D7e7a4c31fda6a07ED96575f15a8Ac86f240",
+      "votes": {
+        "0x1Cd67946A11E6410a3DF1b27d35F4a511e93c882": "agree",
+        "0x2C93031BCCd12836A67f81a249e68abAFEaac2E5": "agree",
+        "0x2bB088e4E6Fd1faBBd23d93F38D01f28a954A49c": "agree",
+        "0x8644a8D2D08903cAFA1F0fb28E34E0ecA727e9ED": "idle",
+        "0xC65Ec56a1141866951B34D846be8EF433764A48B": "idle"
+      },
+      "agreeCount": 3,
+      "quorumAgreed": true,
+      "validatorCount": 4,
+      "error": null
+    }
+  },
+  "baselineState": {
+    "id": "HLS-2026-1104-PARTIAL",
+    "lead_author": "Heliosophia synthetic acceptance fixture",
+    "creator": "0x6277C898F8DB9D46c0cc724613BD314006D3D6d9",
+    "title": "Synthetic structural benchmark: controlled acceptance fixture (PARTIAL case)",
+    "preprint_url": "https://raw.githubusercontent.com/gqzy1/heliosophia-genlayer-protocol/f9e37bf76a59ca17b4b75b8fb3822c95bbe8287e/public/evidence/preprint.txt",
+    "target_metric_clause": "Across five seeds, backbone RMSD must be <= 1.26 Angstrom and compute reduction >= 38 percent on the synthetic target.",
+    "royalty_pool_usdc": 80000,
+    "replicator_share_bps": 2000,
+    "novelty_tier": "DERIVATIVE",
+    "epistemic_confidence_bps": 7600,
+    "methodology_summary": "The fixture specifies a synthetic structural benchmark requiring a method to achieve backbone RMSD <= 1.26 Angstrom and compute reduction >= 38 percent against the baseline across five independent seeds.",
+    "preprint_sha256": "10862ba20088193744a5a54de7ec3a6af682fe31b836262689f0cbda6f3128d6",
+    "settlement_mode": "ACCOUNTING_ONLY_NO_TOKEN_TRANSFER",
+    "status": "OPEN_FOR_REPLICATION",
+    "replication_count": 0,
+    "author_royalty_released": 0,
+    "replicator_royalty_released": 0,
+    "last_verdict": "BASELINE_INDEXED"
+  },
+  "lastOnchainState": {
+    "id": "HLS-2026-1104-PARTIAL",
+    "lead_author": "Heliosophia synthetic acceptance fixture",
+    "creator": "0x6277C898F8DB9D46c0cc724613BD314006D3D6d9",
+    "title": "Synthetic structural benchmark: controlled acceptance fixture (PARTIAL case)",
+    "preprint_url": "https://raw.githubusercontent.com/gqzy1/heliosophia-genlayer-protocol/f9e37bf76a59ca17b4b75b8fb3822c95bbe8287e/public/evidence/preprint.txt",
+    "target_metric_clause": "Across five seeds, backbone RMSD must be <= 1.26 Angstrom and compute reduction >= 38 percent on the synthetic target.",
+    "royalty_pool_usdc": 80000,
+    "replicator_share_bps": 2000,
+    "novelty_tier": "DERIVATIVE",
+    "epistemic_confidence_bps": 7600,
+    "methodology_summary": "The fixture specifies a synthetic structural benchmark requiring a method to achieve backbone RMSD <= 1.26 Angstrom and compute reduction >= 38 percent against the baseline across five independent seeds.",
+    "preprint_sha256": "10862ba20088193744a5a54de7ec3a6af682fe31b836262689f0cbda6f3128d6",
+    "settlement_mode": "ACCOUNTING_ONLY_NO_TOKEN_TRANSFER",
+    "status": "CONTESTED_VARIANCE",
+    "replication_count": 1,
+    "author_royalty_released": 0,
+    "replicator_royalty_released": 0,
+    "last_verdict": "PARTIAL_CONVERGENCE",
+    "last_audit_conclusion": "Only two of five required seeds are reported and compute_reduction is entirely missing across all runs, so the declared clause cannot be fully evaluated and partial convergence applies.",
+    "last_telemetry_sha256": "ec9cbd09fc8b700abcfe8b91a162d6c88b58ddb56b90105053589de0228dfb5b"
+  },
+  "replicationAudit": {
+    "audit_conclusion": "Only two of five required seeds are reported and compute_reduction is entirely missing across all runs, so the declared clause cannot be fully evaluated and partial convergence applies.",
+    "eci_delta_bps": 0,
+    "observed_variance_bps": 0,
+    "royalty_unlock_bps": 0,
+    "telemetry_sha256": "ec9cbd09fc8b700abcfe8b91a162d6c88b58ddb56b90105053589de0228dfb5b",
+    "verdict": "PARTIAL_CONVERGENCE",
+    "submitter": "0xd86243DeB41399001b47FC064c7B3fDfEf75f38D",
+    "replication_lab": "Heliosophia controlled integration fixture",
+    "telemetry_url": "https://raw.githubusercontent.com/gqzy1/heliosophia-genlayer-protocol/490e18a4dd00619714405e1989901ef896d390cf/public/evidence/replication-partial.json",
+    "evidence_scope": "REPORTED_MEASUREMENTS_ONLY",
+    "independence_verified": false
+  },
+  "assertions": {
+    "status": "CONTESTED_VARIANCE",
+    "last_verdict": "PARTIAL_CONVERGENCE",
+    "epistemic_confidence_bps": 7600,
+    "author_royalty_released": 0,
+    "replicator_royalty_released": 0,
+    "replication_count": 1
+  },
+  "updatedAt": "2026-11-09T18:35:03.685Z",
+  "registerSignerAddress": "0x6277C898F8DB9D46c0cc724613BD314006D3D6d9",
+  "replicationSignerAddress": "0xd86243DeB41399001b47FC064c7B3fDfEf75f38D"
+}

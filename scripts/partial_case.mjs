@@ -54,7 +54,24 @@ async function main() {
     return typeof result === 'string' && /^[{\[]/.test(result) ? JSON.parse(result) : result;
   };
   const existing = await client.readContract({ address: CONTRACT, functionName: 'get_discovery', args: [DISCOVERY_ID] });
-  assert.equal(existing, '{}', `Discovery ${DISCOVERY_ID} already exists; pick a fresh id instead of reusing one.`);
+  // Resumable: if a previous run already registered this discovery (FINALIZED)
+  // but stopped before the replication proof, reuse it instead of registering
+  // twice. Pass the register tx hash so the evidence stays complete:
+  //   PARTIAL_REGISTER_TX=0x... node scripts/partial_case.mjs --evidence-ref <sha>
+  let register;
+  if (existing !== '{}') {
+    const parsed = JSON.parse(existing);
+    assert.equal(parsed.id, DISCOVERY_ID);
+    assert.equal(parsed.replication_count, 0, `Discovery ${DISCOVERY_ID} already has a replication; pick a fresh id.`);
+    assert.equal(parsed.status, 'OPEN_FOR_REPLICATION');
+    const resumeHash = process.env.PARTIAL_REGISTER_TX || '';
+    assert.match(resumeHash, /^0x[a-fA-F0-9]{64}$/, 'Discovery already registered: supply its FINALIZED register tx hash as PARTIAL_REGISTER_TX to resume.');
+    const tx = await client.getTransaction({ hash: resumeHash });
+    assert.ok(tx, `Register tx ${resumeHash} not found on-chain.`);
+    register = { hash: resumeHash, receipt: summarizeReceipt(tx, resumeHash) };
+    assert.equal(register.receipt.status, 'FINALIZED');
+    console.log('Resume registerDiscovery', resumeHash);
+  }
 
   async function execute(name, submit) {
     const hash = await submit();
@@ -79,18 +96,20 @@ async function main() {
     throw new Error(`Tracking timed out for ${hash}. Resume this same hash; do not submit a duplicate.`);
   }
 
-  const register = await execute('registerDiscovery', () => client.writeContract({
-    address: CONTRACT, functionName: 'register_discovery',
-    args: [DISCOVERY_ID, 'Heliosophia synthetic acceptance fixture',
-      'Synthetic structural benchmark: controlled acceptance fixture (PARTIAL case)',
-      preprintUrl, 'Across five seeds, backbone RMSD must be <= 1.26 Angstrom and compute reduction >= 38 percent on the synthetic target.',
-      80000, 2000],
-    value: 0n, leaderOnly: false,
-  }));
+  if (!register) {
+    register = await execute('registerDiscovery', () => client.writeContract({
+      address: CONTRACT, functionName: 'register_discovery',
+      args: [DISCOVERY_ID, 'Heliosophia synthetic acceptance fixture',
+        'Synthetic structural benchmark: controlled acceptance fixture (PARTIAL case)',
+        preprintUrl, 'Across five seeds, backbone RMSD must be <= 1.26 Angstrom and compute reduction >= 38 percent on the synthetic target.',
+        80000, 2000],
+      value: 0n, leaderOnly: false,
+    }));
+  }
   const baseline = await read('get_discovery', [DISCOVERY_ID]);
   assert.equal(baseline.id, DISCOVERY_ID);
   assert.equal(baseline.epistemic_confidence_bps, 7600);
-  assert.equal(baseline.status, 'OPEN');
+  assert.equal(baseline.status, 'OPEN_FOR_REPLICATION');
 
   const replication = await execute('submitReplicationProof', () => client.writeContract({
     address: CONTRACT, functionName: 'submit_replication_proof',
@@ -111,7 +130,7 @@ async function main() {
   const evidence = {
     case: 'PARTIAL_CONVERGENCE on-chain case',
     network: 'GenLayer Stable Studionet', chainId: CHAIN_ID, rpcUrl: RPC_URL,
-    contractAddress: CONTRACT, discoveryId: DISCOVERY_ID, signerAddress: account.address,
+    contractAddress: CONTRACT, discoveryId: DISCOVERY_ID, replicationSignerAddress: account.address,
     evidenceRef: ref, preprintUrl, telemetryUrl,
     transactions: { registerDiscovery: register.hash, submitReplicationProof: replication.hash },
     receipts: { registerDiscovery: register.receipt, submitReplicationProof: replication.receipt },

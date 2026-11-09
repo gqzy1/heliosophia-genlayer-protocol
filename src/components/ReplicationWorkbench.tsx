@@ -105,6 +105,16 @@ export const ReplicationWorkbench: React.FC<Props> = ({
   // verdict": a PARTIAL verdict unlocks nothing (see unlockedBpsByThisVerdict).
   const authorPayout = readbackForThisDiscovery ? readbackForThisDiscovery.author_royalty_released : 0;
   const replicatorPayout = readbackForThisDiscovery ? readbackForThisDiscovery.replicator_royalty_released : 0;
+  // The lifecycle record belongs to the discovery named in it. Steps and
+  // the raw readback JSON must not present another discovery's transaction
+  // as this discovery's state.
+  const lifecycleForThisDiscovery = txLifecycle.discoveryId === discovery.id;
+  // Transient messages name a discovery, so they must not survive a switch.
+  useEffect(() => {
+    setStatusDetail('');
+    setTxLifecycle((prev) => (prev.errorMessage ? { ...prev, errorMessage: null } : prev));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [discovery.id]);
   const unlockedBpsByThisVerdict = readbackForThisDiscovery
     ? readbackForThisDiscovery.last_verdict === 'REPLICATED_WITHIN_TOLERANCE'
       ? 10000
@@ -444,7 +454,7 @@ export const ReplicationWorkbench: React.FC<Props> = ({
     },
     {
       step: '02 // SUBMIT TX (writeContract)',
-      done: Boolean(txLifecycle.txHash),
+      done: Boolean(txLifecycle.txHash) && lifecycleForThisDiscovery,
       active:
         txLifecycle.phase === 'SIGNING_AND_SUBMITTING' ||
         txLifecycle.phase === 'PENDING_PROPOSING',
@@ -455,7 +465,8 @@ export const ReplicationWorkbench: React.FC<Props> = ({
     {
       step: '03 // CONSENSUS FINALIZED',
       done:
-        txLifecycle.phase === 'FINALIZED' || txLifecycle.phase === 'READBACK_VERIFIED',
+        (txLifecycle.phase === 'FINALIZED' || txLifecycle.phase === 'READBACK_VERIFIED') &&
+        lifecycleForThisDiscovery,
       active: txLifecycle.phase === 'COMMITTING_EQUIVALENCE',
       desc: txLifecycle.receiptStatus
         ? `Status: ${txLifecycle.receiptStatus}`
@@ -463,10 +474,10 @@ export const ReplicationWorkbench: React.FC<Props> = ({
     },
     {
       step: '04 // ON-CHAIN READBACK (readContract)',
-      done: txLifecycle.phase === 'READBACK_VERIFIED',
+      done: txLifecycle.phase === 'READBACK_VERIFIED' && lifecycleForThisDiscovery,
       active: false,
       desc:
-        txLifecycle.phase === 'READBACK_VERIFIED'
+        txLifecycle.phase === 'READBACK_VERIFIED' && lifecycleForThisDiscovery
           ? `Verified get_discovery('${txLifecycle.discoveryId}')`
           : 'Reads finalized TreeMap state from Studionet',
     },
@@ -640,7 +651,7 @@ export const ReplicationWorkbench: React.FC<Props> = ({
           </div>
         )}
 
-        {txLifecycle.readbackDataJson && (
+        {txLifecycle.readbackDataJson && readbackForThisDiscovery && (
           <div className="space-y-1">
             <div className="font-mono text-[11px] uppercase text-verdigris font-semibold">
               VERIFIED ON-CHAIN READBACK (`client.readContract("get_discovery", ["{txLifecycle.discoveryId}"])`):

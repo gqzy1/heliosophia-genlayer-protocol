@@ -177,6 +177,7 @@ export const ReplicationWorkbench: React.FC<Props> = ({
         errorMessage: null,
         updatedAtIso: new Date().toISOString(),
       }));
+      setStatusDetail(`Readback verified: get_discovery('${discovery.id}') returned the FINALIZED on-chain state.`);
       soundInstrument.playEpistemicSeal();
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : 'readContract failed';

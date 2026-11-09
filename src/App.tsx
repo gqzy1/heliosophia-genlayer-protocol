@@ -393,7 +393,11 @@ export default function App() {
           </div>
         )}
 
-        {activeTab === 'WORKBENCH' && (
+        {/* The workbench stays mounted when switching tabs: its readback
+            state must survive a round trip to §01/§03, or a reviewer who
+            reads back, checks the inspector and returns would lose the
+            readback and the export with it. */}
+        <div style={{ display: activeTab === 'WORKBENCH' ? undefined : 'none' }}>
           <ReplicationWorkbench
             discovery={activeDiscovery}
             auditStage={auditStage}
@@ -406,7 +410,7 @@ export default function App() {
             onConnectMetaMask={handleConnectMetaMask}
             onConnectSdkSigner={handleConnectSdkSigner}
           />
-        )}
+        </div>
 
         {activeTab === 'CONTRACT' && (
           <ContractAndRpcInspector

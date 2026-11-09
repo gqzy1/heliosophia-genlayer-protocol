@@ -1,15 +1,15 @@
 {
-  "src/App.tsx": "b0b8cce0be1b58f64822c5043d6451c625671d1e444b1b8f19a314bf18d0401f",
+  "src/App.tsx": "08642c432e0e14cfd1492aff76b3bf7a89fd3b467fefd966f031d782a8387f0d",
   "src/audio/mechanicalSound.ts": "e77878d96ef22076063f45d3530d04cb2d1fbf67e1e8d104e6f7d15d027a43d4",
   "src/components/ArchitectureAndGovernance.tsx": "773a88c09dea5dc608a25c5356e0e03d4ab21816f560267d06f8255c1d7a6240",
   "src/components/ContractAndRpcInspector.tsx": "7174fe303f6461eca45acaea299803ac81c7bae83350f010b2ead20da87792f2",
   "src/components/EpistemicCartographyCanvas.tsx": "bf051a837931115cccd160a49eed99e291bdc970699b3fb21a4b5771a675b844",
-  "src/components/ReplicationWorkbench.tsx": "7c913c9186833aab7c2edba17d6970aae30a14274ce03e8d65b2d0b5811c9e85",
+  "src/components/ReplicationWorkbench.tsx": "da561cc0f6a9a914bf0c07be4f116f26f9537af62cb2e052355fc3e093712b5e",
   "src/config/deployment.json": "47f2193cb511a551be689a37a538bf79ef108d376af4309bc1170c16e847ecfe",
   "src/config/studionet.ts": "064dd5d0b1df066a7bbde888cbb3397ac69a265bd598e3c653ac9d3a2bd51085",
   "src/data/discoveries.ts": "ece3a94ecf261becda02d8f18941873bb39ef6db1245adab7caf1e70c63310d2",
   "src/index.css": "18243db3c5699c22dfffa9d3b2159af7424cfcc42ea32d6b732ffac599375bb6",
   "src/main.tsx": "14a10dee4aaa2130d9f57c136db7f16f95f524d60d77146b17776e91c2ab626c",
   "src/types/heliosophia.ts": "ce35f0f8e8bdf1f7687992c921fda5d7abc4dc8028f962c8d0fc54bc3ca8facf",
-  "src/utils/dossier.ts": "6f98d298f50ddde56b10c5503e8004da7b350d5902005fe8441f4a01d664baec"
+  "src/utils/dossier.ts": "9ac00b2dd025889802a72f2386a1cf18ac056d80a7eca62d113f90af9d58b1c4"
 }

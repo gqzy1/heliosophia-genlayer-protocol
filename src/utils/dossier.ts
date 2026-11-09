@@ -112,11 +112,22 @@ export interface Dossier {
     connectedSigner: string | null;
   };
   onChainTransaction: {
-    txHash: string;
-    receiptStatus: string;
+    /** The FINALIZED transaction from this session, if this session performed
+     * the write. Null for a readback-only export: the readback below is
+     * itself the finalized on-chain state, and its JSON is embedded verbatim. */
+    txHash: string | null;
+    receiptStatus: string | null;
     lifecyclePhase: string;
     readbackDataJson: string;
   };
+  /** How this dossier was produced. A readback-only export is a legitimate
+   * verification path: a reviewer who opens the site, reads back the
+   * finalized state and exports it must get a dossier — requiring a write
+   * transaction in the same session would make the export unverifiable
+   * without sending a transaction. */
+  exportSource:
+    | 'FINALIZED transaction in this session'
+    | 'FINALIZED get_discovery readback (no transaction in this session)';
   discoveryFolio: string;
   title: string;
   preprintUrl: string;
@@ -147,14 +158,13 @@ export interface Dossier {
  * Build the exported epistemic dossier from a FINALIZED readback.
  * Throws (and the caller must not download anything) when there is no
  * FINALIZED readback, when the readback belongs to another discovery, or
- * when any readback field is missing or unknown.
+ * when any readback field is missing or unknown. A readback obtained by a
+ * plain get_discovery call — with no transaction in this session — is
+ * sufficient: the readback IS the finalized on-chain state.
  */
 export function buildDossierFromReadback(input: DossierInput): Dossier {
   if (input.lifecyclePhase !== 'READBACK_VERIFIED') {
     throw new Error('No FINALIZED readback yet. Export is disabled until get_discovery has been read back.');
-  }
-  if (!input.txHash || input.receiptStatus !== 'FINALIZED') {
-    throw new Error('No FINALIZED transaction yet. Export is disabled until the transaction is FINALIZED.');
   }
   const record = parseReadback(input.readbackJson);
   if (!record) throw new Error('No FINALIZED readback yet. Export is disabled until get_discovery has been read back.');
@@ -162,6 +172,7 @@ export function buildDossierFromReadback(input: DossierInput): Dossier {
     throw new Error(`Readback belongs to ${record.id}, not ${input.discoveryId}.`);
   }
   const verdict = record.last_verdict as ReadbackVerdict;
+  const fromSessionTx = Boolean(input.txHash) && input.receiptStatus === 'FINALIZED';
   return {
     protocol: 'HELIOSOPHIA // Epistemic Reproducibility & IP Royalty Ledger v2.0',
     network: {
@@ -172,11 +183,14 @@ export function buildDossierFromReadback(input: DossierInput): Dossier {
       connectedSigner: input.connectedSigner,
     },
     onChainTransaction: {
-      txHash: input.txHash,
-      receiptStatus: input.receiptStatus,
+      txHash: input.txHash ?? null,
+      receiptStatus: input.receiptStatus ?? null,
       lifecyclePhase: input.lifecyclePhase,
       readbackDataJson: input.readbackJson as string,
     },
+    exportSource: fromSessionTx
+      ? 'FINALIZED transaction in this session'
+      : 'FINALIZED get_discovery readback (no transaction in this session)',
     discoveryFolio: record.id,
     title: input.title,
     preprintUrl: input.preprintUrl,

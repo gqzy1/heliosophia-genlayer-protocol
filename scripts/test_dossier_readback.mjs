@@ -115,12 +115,25 @@ try {
   assert.throws(() => parseReadback('not json'), /not valid JSON/);
   assert.throws(() => parseReadback(readback({ last_verdict: 'MAYBE' })), /unknown verdict/);
 
-  // Refusal: no readback, not FINALIZED, wrong phase, or wrong discovery -> no dossier at all.
+  // Refusal: no readback, wrong phase, or wrong discovery -> no dossier at all.
   assert.throws(() => buildDossierFromReadback({ ...base, readbackJson: null }), /No FINALIZED readback/);
-  assert.throws(() => buildDossierFromReadback({ ...base, readbackJson: readback({}), txHash: null }), /No FINALIZED transaction/);
   assert.throws(() => buildDossierFromReadback({ ...base, readbackJson: readback({}), lifecyclePhase: 'FINALIZED' }), /No FINALIZED readback/);
   assert.throws(() => buildDossierFromReadback({ ...base, readbackJson: readback({ id: 'HLS-OTHER' }) }), /belongs to HLS-OTHER/);
   assert.throws(() => modeFromVerdict('MAYBE'), /Unknown replication verdict/);
+
+  // Readback-only export: a plain get_discovery readback with no transaction
+  // in this session is sufficient — this is how a reviewer verifies the
+  // corrected flow without sending a transaction. The dossier says so.
+  const readbackOnly = buildDossierFromReadback({
+    ...base, readbackJson: readback({}), txHash: null, receiptStatus: null,
+  });
+  assert.equal(readbackOnly.verdict, 'REPLICATED_WITHIN_TOLERANCE');
+  assert.equal(readbackOnly.epistemicConfidenceBps, 9550);
+  assert.equal(readbackOnly.preprintSha256, '10862ba20088193744a5a54de7ec3a6af682fe31b836262689f0cbda6f3128d6');
+  assert.equal(readbackOnly.onChainTransaction.txHash, null);
+  assert.equal(readbackOnly.exportSource, 'FINALIZED get_discovery readback (no transaction in this session)');
+  const fromSession = buildDossierFromReadback({ ...base, readbackJson: readback({}) });
+  assert.equal(fromSession.exportSource, 'FINALIZED transaction in this session');
 
   console.log('dossier readback tests: PASS (success + partial + refuted + refusals)');
 } finally {

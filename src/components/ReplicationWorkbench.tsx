@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   OnChainLifecyclePhase,
   OnChainTransactionLifecycle,
@@ -20,6 +20,9 @@ interface Props {
   auditMode: 'REPLICATED' | 'PARTIAL' | 'REFUTED';
   onRunAudit: (mode: 'REPLICATED' | 'PARTIAL' | 'REFUTED') => void;
   onRegisterCustomDiscovery: (custom: ScientificDiscovery) => void;
+  /** Reports a verified readback up so the FOLIO list can show it. Called
+   * with the readback's own discovery id, whenever a readback arrives. */
+  onReadback?: (readback: { id: string; eciBps: number; verdict: string; status: string } | null) => void;
   lang: 'en' | 'zh';
   boundContractAddress: string | null;
   wallet: WalletConnectionState;
@@ -33,6 +36,7 @@ export const ReplicationWorkbench: React.FC<Props> = ({
   auditMode,
   onRunAudit,
   onRegisterCustomDiscovery,
+  onReadback,
   lang,
   boundContractAddress,
   wallet,
@@ -74,14 +78,35 @@ export const ReplicationWorkbench: React.FC<Props> = ({
       return null;
     }
   })();
-  const readbackMode = readbackRecord ? modeFromVerdict(readbackRecord.last_verdict) : null;
-  const readbackEciBps = readbackRecord ? readbackRecord.epistemic_confidence_bps : null;
+  // A readback belongs to exactly one discovery. When the selected discovery
+  // changes, the previous discovery's readback must not leak into this
+  // discovery's display: only the record whose id matches is shown here.
+  const readbackForThisDiscovery =
+    readbackRecord && readbackRecord.id === discovery.id ? readbackRecord : null;
+  // Report the readback up (under its own id) so the FOLIO list can show the
+  // read-back ECI for that discovery even after the selection changes.
+  useEffect(() => {
+    onReadback?.(
+      readbackRecord
+        ? {
+            id: readbackRecord.id,
+            eciBps: readbackRecord.epistemic_confidence_bps,
+            verdict: readbackRecord.last_verdict,
+            status: readbackRecord.status,
+          }
+        : null
+    );
+    // Only the readback JSON itself triggers a report, not the callback identity.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [txLifecycle.readbackDataJson]);
+  const readbackMode = readbackForThisDiscovery ? modeFromVerdict(readbackForThisDiscovery.last_verdict) : null;
+  const readbackEciBps = readbackForThisDiscovery ? readbackForThisDiscovery.epistemic_confidence_bps : null;
   // Cumulative amounts released so far, as read back. Not "released by this
   // verdict": a PARTIAL verdict unlocks nothing (see unlockedBpsByThisVerdict).
-  const authorPayout = readbackRecord ? readbackRecord.author_royalty_released : 0;
-  const replicatorPayout = readbackRecord ? readbackRecord.replicator_royalty_released : 0;
-  const unlockedBpsByThisVerdict = readbackRecord
-    ? readbackRecord.last_verdict === 'REPLICATED_WITHIN_TOLERANCE'
+  const authorPayout = readbackForThisDiscovery ? readbackForThisDiscovery.author_royalty_released : 0;
+  const replicatorPayout = readbackForThisDiscovery ? readbackForThisDiscovery.replicator_royalty_released : 0;
+  const unlockedBpsByThisVerdict = readbackForThisDiscovery
+    ? readbackForThisDiscovery.last_verdict === 'REPLICATED_WITHIN_TOLERANCE'
       ? 10000
       : 0
     : 0;
@@ -450,7 +475,7 @@ export const ReplicationWorkbench: React.FC<Props> = ({
   // Gate 11: step text is readback-driven. No readback -> unconfirmed.
   // PARTIAL is its own branch: ECI unchanged, 0 unlocked, never success.
   const step04Desc = (l: 'en' | 'zh'): string => {
-    if (!readbackRecord) {
+    if (!readbackForThisDiscovery) {
       return l === 'en'
         ? 'No FINALIZED readback yet — verdict, ECI and allocation are unconfirmed.'
         : '尚未读回 FINALIZED 状态——裁决、ECI 与分配均未确认。';
@@ -470,7 +495,7 @@ export const ReplicationWorkbench: React.FC<Props> = ({
       : `实测值 ${discovery.replicatedMetricValue} ${discovery.baselineMetricUnit} 严格处于容差区间内，5 节点达成一致。`;
   };
   const step05Desc = (l: 'en' | 'zh'): string => {
-    if (!readbackRecord || readbackEciBps === null) {
+    if (!readbackForThisDiscovery || readbackEciBps === null) {
       return l === 'en'
         ? 'ECI and royalty allocation are unconfirmed until the FINALIZED get_discovery readback.'
         : 'ECI 与版税分配在 FINALIZED get_discovery 读回之前均为未确认。';
@@ -662,8 +687,8 @@ export const ReplicationWorkbench: React.FC<Props> = ({
               : '⚡ 提交实证证伪上链 (罚没 ECI)'}
           </button>
           <button
-            disabled={!readbackRecord}
-            title={readbackRecord ? undefined : 'Export is disabled until the FINALIZED get_discovery readback.'}
+            disabled={!readbackForThisDiscovery}
+            title={readbackForThisDiscovery ? undefined : 'Export is disabled until the FINALIZED get_discovery readback.'}
             onClick={handleExportDossier}
             className="px-3.5 py-2.5 border border-hairline dark:border-nocturneRule bg-alabaster dark:bg-nocturneBg font-mono text-xs text-graphite dark:text-stone-300 hover:border-carbon transition disabled:opacity-40"
           >
@@ -730,7 +755,7 @@ export const ReplicationWorkbench: React.FC<Props> = ({
                   {lang === 'en' ? 'TOTAL ROYALTY ESCROW' : '锁定科研版税总池'}
                 </div>
                 <div className="text-lg font-semibold mt-0.5 tabular-nums">
-                  {readbackRecord ? readbackRecord.royalty_pool_usdc.toLocaleString() : '— 未读回'} USDC
+                  {readbackForThisDiscovery ? readbackForThisDiscovery.royalty_pool_usdc.toLocaleString() : '— 未读回'} USDC
                 </div>
               </div>
               <div className="p-3 border border-hairline dark:border-nocturneRule bg-alabaster dark:bg-nocturneBg">
@@ -738,7 +763,7 @@ export const ReplicationWorkbench: React.FC<Props> = ({
                   {lang === 'en' ? 'REPLICATOR INCENTIVE' : '复现实验室分成比例'}
                 </div>
                 <div className="text-lg font-semibold mt-0.5 tabular-nums">
-                  {readbackRecord ? (readbackRecord.replicator_share_bps / 100).toFixed(1) : '— 未读回'}%
+                  {readbackForThisDiscovery ? (readbackForThisDiscovery.replicator_share_bps / 100).toFixed(1) : '— 未读回'}%
                 </div>
               </div>
               <div className="p-3 border border-hairline dark:border-nocturneRule bg-alabaster dark:bg-nocturneBg">
@@ -746,7 +771,7 @@ export const ReplicationWorkbench: React.FC<Props> = ({
                   {lang === 'en' ? 'AUTHOR RELEASED · CUMULATIVE (READBACK)' : '原作者已解锁版税 · 累计（读回）'}
                 </div>
                 <div className="text-lg font-semibold text-verdigris mt-0.5 tabular-nums">
-                  {readbackRecord ? `${authorPayout.toLocaleString()} USDC` : '— 未读回'}
+                  {readbackForThisDiscovery ? `${authorPayout.toLocaleString()} USDC` : '— 未读回'}
                 </div>
               </div>
               <div className="p-3 border border-hairline dark:border-nocturneRule bg-alabaster dark:bg-nocturneBg">
@@ -754,18 +779,18 @@ export const ReplicationWorkbench: React.FC<Props> = ({
                   {lang === 'en' ? 'REPLICATOR RELEASED · CUMULATIVE (READBACK)' : '复现方已获赏金 · 累计（读回）'}
                 </div>
                 <div className="text-lg font-semibold text-prussian mt-0.5 tabular-nums">
-                  {readbackRecord ? `${replicatorPayout.toLocaleString()} USDC` : '— 未读回'}
+                  {readbackForThisDiscovery ? `${replicatorPayout.toLocaleString()} USDC` : '— 未读回'}
                 </div>
               </div>
             </div>
 
             <div className="mt-4 pt-4 border-t border-hairline dark:border-nocturneRule font-mono text-[11px] text-graphite dark:text-stone-400">
               {lang === 'en'
-                ? readbackRecord
-                  ? `UNLOCKED BY THIS VERDICT: ${(unlockedBpsByThisVerdict / 100).toFixed(0)}% (PARTIAL / REFUTED: 0%) · VERDICT: ${readbackRecord.last_verdict} · STATUS: ${readbackRecord.status}`
+                ? readbackForThisDiscovery
+                  ? `UNLOCKED BY THIS VERDICT: ${(unlockedBpsByThisVerdict / 100).toFixed(0)}% (PARTIAL / REFUTED: 0%) · VERDICT: ${readbackForThisDiscovery.last_verdict} · STATUS: ${readbackForThisDiscovery.status}`
                   : 'UNLOCKED BY THIS VERDICT: 未读回'
-                : readbackRecord
-                ? `本次裁决解锁：${(unlockedBpsByThisVerdict / 100).toFixed(0)}%（PARTIAL / REFUTED 为 0%）· 裁决：${readbackRecord.last_verdict} · 状态：${readbackRecord.status}`
+                : readbackForThisDiscovery
+                ? `本次裁决解锁：${(unlockedBpsByThisVerdict / 100).toFixed(0)}%（PARTIAL / REFUTED 为 0%）· 裁决：${readbackForThisDiscovery.last_verdict} · 状态：${readbackForThisDiscovery.status}`
                 : '本次裁决解锁：未读回'}
             </div>
             <div className="mt-4 pt-4 border-t border-hairline dark:border-nocturneRule">
@@ -773,8 +798,8 @@ export const ReplicationWorkbench: React.FC<Props> = ({
                 {lang === 'en' ? 'ON-CHAIN AUDIT CONCLUSION' : '链上乐观民主裁决结论'}
               </div>
               <p className="text-xs text-carbon dark:text-stone-200 mt-1.5 leading-relaxed">
-                {readbackRecord
-                  ? readbackRecord.last_audit_conclusion ??
+                {readbackForThisDiscovery
+                  ? readbackForThisDiscovery.last_audit_conclusion ??
                     (lang === 'en' ? 'Readback has no audit conclusion.' : '读回中无裁决结论。')
                   : lang === 'en'
                   ? 'Unconfirmed — the audit conclusion comes from the FINALIZED get_discovery readback.'
@@ -786,17 +811,17 @@ export const ReplicationWorkbench: React.FC<Props> = ({
           <div className="p-4 border border-hairline dark:border-nocturneRule bg-alabaster dark:bg-nocturneBg">
             <div className="flex items-center justify-between font-mono text-[11px] text-graphite dark:text-stone-400 mb-2">
               <span>LIVE TELEMETRY DIGEST (READBACK)</span>
-              <span>{readbackRecord ? 'SHA-256 · 读回' : '未读回'}</span>
+              <span>{readbackForThisDiscovery ? 'SHA-256 · 读回' : '未读回'}</span>
             </div>
             <pre className="p-3 bg-linen dark:bg-nocturneSurface border border-hairline dark:border-nocturneRule font-mono text-[11px] overflow-x-auto leading-relaxed">
-              {readbackRecord
+              {readbackForThisDiscovery
                 ? JSON.stringify(
                     {
-                      discovery_id: readbackRecord.id,
-                      last_verdict: readbackRecord.last_verdict,
-                      status: readbackRecord.status,
-                      epistemic_confidence_bps: readbackRecord.epistemic_confidence_bps,
-                      last_telemetry_sha256: readbackRecord.last_telemetry_sha256 ?? null,
+                      discovery_id: readbackForThisDiscovery.id,
+                      last_verdict: readbackForThisDiscovery.last_verdict,
+                      status: readbackForThisDiscovery.status,
+                      epistemic_confidence_bps: readbackForThisDiscovery.epistemic_confidence_bps,
+                      last_telemetry_sha256: readbackForThisDiscovery.last_telemetry_sha256 ?? null,
                     },
                     null,
                     2

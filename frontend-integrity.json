@@ -1,10 +1,10 @@
 {
-  "src/App.tsx": "08642c432e0e14cfd1492aff76b3bf7a89fd3b467fefd966f031d782a8387f0d",
+  "src/App.tsx": "fa9bdeb9dfc7c001d0c95157184eb6cd9dd6c2310fc2efb4dda8e63b8c1fc696",
   "src/audio/mechanicalSound.ts": "e77878d96ef22076063f45d3530d04cb2d1fbf67e1e8d104e6f7d15d027a43d4",
   "src/components/ArchitectureAndGovernance.tsx": "773a88c09dea5dc608a25c5356e0e03d4ab21816f560267d06f8255c1d7a6240",
   "src/components/ContractAndRpcInspector.tsx": "7174fe303f6461eca45acaea299803ac81c7bae83350f010b2ead20da87792f2",
   "src/components/EpistemicCartographyCanvas.tsx": "bf051a837931115cccd160a49eed99e291bdc970699b3fb21a4b5771a675b844",
-  "src/components/ReplicationWorkbench.tsx": "da561cc0f6a9a914bf0c07be4f116f26f9537af62cb2e052355fc3e093712b5e",
+  "src/components/ReplicationWorkbench.tsx": "8953503a20061bc3c820edf1cebe6d758edecb08e6cac51c108c784dfe7fa201",
   "src/config/deployment.json": "47f2193cb511a551be689a37a538bf79ef108d376af4309bc1170c16e847ecfe",
   "src/config/studionet.ts": "064dd5d0b1df066a7bbde888cbb3397ac69a265bd598e3c653ac9d3a2bd51085",
   "src/data/discoveries.ts": "ece3a94ecf261becda02d8f18941873bb39ef6db1245adab7caf1e70c63310d2",

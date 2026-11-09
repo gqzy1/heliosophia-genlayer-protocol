@@ -30,6 +30,26 @@ export default function App() {
   );
   const [activeTab, setActiveTab] = useState<'FOLIO' | 'WORKBENCH' | 'CONTRACT' | 'GOVERNANCE'>('FOLIO');
   const [auditStage, setAuditStage] = useState<number>(0);
+  // Readbacks verified in the workbench, keyed by discovery id. The FOLIO
+  // cards read from this so a verified ECI stays visible after the readback,
+  // and each card only ever shows its own discovery's readback.
+  const [readbackById, setReadbackById] = useState<
+    Record<string, { eciBps: number; verdict: string; status: string }>
+  >({});
+  const handleWorkbenchReadback = (
+    r: { id: string; eciBps: number; verdict: string; status: string } | null
+  ) => {
+    if (!r) return;
+    setReadbackById((prev) =>
+      prev[r.id]?.eciBps === r.eciBps && prev[r.id]?.verdict === r.verdict
+        ? prev
+        : { ...prev, [r.id]: { eciBps: r.eciBps, verdict: r.verdict, status: r.status } }
+    );
+  };
+  const folioEciLabel = (id: string): string => {
+    const rb = readbackById[id];
+    return rb ? `ECI: ${(rb.eciBps / 100).toFixed(2)}% · 已读回` : 'ECI: 未读回';
+  };
   const [auditMode, setAuditMode] = useState<'REPLICATED' | 'PARTIAL' | 'REFUTED'>('REPLICATED');
   const [lang, setLang] = useState<'en' | 'zh'>('en');
   const [darkMode, setDarkMode] = useState<boolean>(false);
@@ -301,7 +321,7 @@ export default function App() {
                         TARGET: {d.baselineMetricValue} {d.baselineMetricUnit} (±{d.tolerancePlusMinus})
                       </span>
                       <span className="text-graphite dark:text-stone-400 font-semibold">
-                        ECI: 未读回
+                        {folioEciLabel(d.id)}
                       </span>
                     </div>
                   </button>
@@ -404,6 +424,7 @@ export default function App() {
             auditMode={auditMode}
             onRunAudit={triggerAuditSimulation}
             onRegisterCustomDiscovery={handleRegisterCustom}
+            onReadback={handleWorkbenchReadback}
             lang={lang}
             boundContractAddress={boundContractAddr || null}
             wallet={wallet}

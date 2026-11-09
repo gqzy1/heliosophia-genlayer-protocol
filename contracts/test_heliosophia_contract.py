@@ -106,6 +106,61 @@ class TestHeliosophiaContract(unittest.TestCase):
     def replicate(self, url='https://fixture.test/replication'):
         return json.loads(self.ledger.submit_replication_proof('HLS-TEST', 'Controlled fixture', url, 'Synthetic acceptance evidence.'))
 
+    def test_registration_readback_matches_submitted_fields(self):
+        """Steward check 1: the registration readback (get_discovery) must match
+        the submitted fields exactly; the frontend displays this readback."""
+        record = self.register(
+            discovery_id='HLS-READBACK',
+            lead_author='Readback Author',
+            title='Readback-matched synthetic benchmark',
+            preprint_url='https://fixture.test/preprint',
+            target_metric_clause='RMSD <= 1.26 Angstrom and compute reduction >= 38%.',
+            royalty_pool_usdc=80000, replicator_share_bps=2000)
+        readback = json.loads(self.ledger.get_discovery('HLS-READBACK'))
+        self.assertEqual(readback['id'], 'HLS-READBACK')
+        self.assertEqual(readback['title'], 'Readback-matched synthetic benchmark')
+        self.assertEqual(readback['preprint_url'], 'https://fixture.test/preprint')
+        self.assertEqual(readback['target_metric_clause'], 'RMSD <= 1.26 Angstrom and compute reduction >= 38%.')
+        self.assertEqual(readback['royalty_pool_usdc'], 80000)
+        self.assertEqual(readback['replicator_share_bps'], 2000)
+        self.assertEqual(readback['epistemic_confidence_bps'], 7600)
+        self.assertEqual(readback['status'], 'OPEN_FOR_REPLICATION')
+        self.assertEqual(readback['replication_count'], 0)
+        self.assertEqual((readback['author_royalty_released'], readback['replicator_royalty_released']), (0, 0))
+        self.assertEqual(record, readback)
+        self.assertEqual(
+            readback['preprint_sha256'],
+            hashlib.sha256(self.runtime.pages['https://fixture.test/preprint'].encode()).hexdigest())
+
+    def test_all_three_verdicts_readback_values(self):
+        """Steward check 2: all three replication verdicts, read back via
+        get_discovery. PARTIAL_CONVERGENCE is distinct: ECI unchanged, no
+        royalty unlocked, status CONTESTED_VARIANCE."""
+        cases = [
+            ('REPLICATED_WITHIN_TOLERANCE', 'REPLICATED_VERIFIED', 9550, (64000, 16000)),
+            ('PARTIAL_CONVERGENCE', 'CONTESTED_VARIANCE', 7600, (0, 0)),
+            ('REPLICATION_REFUTED', 'REFUTED_SLASHED', 4100, (0, 0)),
+        ]
+        for i, (verdict, status, eci, released) in enumerate(cases):
+            discovery_id = f'HLS-VERDICT-{i}'
+            self.register(discovery_id=discovery_id)
+            self.runtime.verdict = verdict
+            json.loads(self.ledger.submit_replication_proof(
+                discovery_id, 'Controlled fixture', 'https://fixture.test/replication',
+                'Synthetic acceptance evidence.'))
+            readback = json.loads(self.ledger.get_discovery(discovery_id))
+            self.assertEqual(readback['last_verdict'], verdict, verdict)
+            self.assertEqual(readback['status'], status, verdict)
+            self.assertEqual(readback['epistemic_confidence_bps'], eci, verdict)
+            self.assertEqual(
+                (readback['author_royalty_released'], readback['replicator_royalty_released']),
+                released, verdict)
+            self.assertEqual(readback['replication_count'], 1, verdict)
+            self.assertTrue(re.fullmatch(r'[0-9a-f]{64}', readback['last_telemetry_sha256']), verdict)
+            self.assertTrue(readback['last_audit_conclusion'], verdict)
+            audit = json.loads(self.ledger.get_replication_log(discovery_id, 1))
+            self.assertEqual(audit['verdict'], verdict, verdict)
+
     def test_registration_reads_source_and_non_comparative_baseline(self):
         record = self.register()
         self.assertEqual(self.ledger.get_discovery_count(), 1)

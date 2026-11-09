@@ -29,8 +29,8 @@ export default function App() {
     EPISTEMIC_VALIDATOR_COMMITTEE[0]
   );
   const [activeTab, setActiveTab] = useState<'FOLIO' | 'WORKBENCH' | 'CONTRACT' | 'GOVERNANCE'>('FOLIO');
-  const [auditStage, setAuditStage] = useState<number>(4);
-  const [auditMode, setAuditMode] = useState<'REPLICATED' | 'REFUTED'>('REPLICATED');
+  const [auditStage, setAuditStage] = useState<number>(0);
+  const [auditMode, setAuditMode] = useState<'REPLICATED' | 'PARTIAL' | 'REFUTED'>('REPLICATED');
   const [lang, setLang] = useState<'en' | 'zh'>('en');
   const [darkMode, setDarkMode] = useState<boolean>(false);
   const [reducedMotion, setReducedMotion] = useState<boolean>(false);
@@ -81,7 +81,7 @@ export default function App() {
     soundInstrument.playEpistemicSeal();
   };
 
-  const triggerAuditSimulation = (mode: 'REPLICATED' | 'REFUTED') => {
+  const triggerAuditSimulation = (mode: 'REPLICATED' | 'PARTIAL' | 'REFUTED') => {
     soundInstrument.playApertureClick();
     soundInstrument.pulseHaptic(14);
     setAuditMode(mode);
@@ -300,8 +300,8 @@ export default function App() {
                       <span>
                         TARGET: {d.baselineMetricValue} {d.baselineMetricUnit} (±{d.tolerancePlusMinus})
                       </span>
-                      <span className="text-verdigris font-semibold">
-                        VERIFIED ECI: {(d.verifiedEciBps / 100).toFixed(2)}%
+                      <span className="text-graphite dark:text-stone-400 font-semibold">
+                        ECI: 未读回
                       </span>
                     </div>
                   </button>
@@ -343,6 +343,12 @@ export default function App() {
                     className="px-3 py-1.5 border border-hairline dark:border-nocturneRule font-mono text-xs"
                   >
                     {lang === 'en' ? 'Preview Refutation' : '预览证伪畸变'}
+                  </button>
+                  <button
+                    onClick={() => triggerAuditSimulation('PARTIAL')}
+                    className="px-3 py-1.5 border border-hairline dark:border-nocturneRule font-mono text-xs"
+                  >
+                    {lang === 'en' ? 'Preview Partial' : '预览部分收敛'}
                   </button>
                 </div>
               </div>

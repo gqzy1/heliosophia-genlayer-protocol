@@ -69,20 +69,25 @@ export const SCIENTIFIC_DISCOVERIES: ScientificDiscovery[] = [
     folioNumber: 'FOLIO // I-0104',
     domainEn: 'Computational Structural Biology',
     domainZh: '计算结构生物学与蛋白质折叠',
-    titleEn: 'Sub-Quadratic State-Space Protein Folding with Zero-Shot Allosteric Binding',
-    titleZh: '亚二次复杂度状态空间蛋白质折叠与零样本变构结合预测',
-    leadAuthor: '0x81C4...90E2',
-    institutionEn: 'ETH Zurich / MIT Computational Biophysics Consortium',
-    institutionZh: '苏黎世联邦理工 / 麻省理工计算生物物理联合实验室',
-    preprintUrl: 'https://arxiv.org/html/2609.04182v1',
-    preprintSha256: '4b9c8e12f0a54d7781c3a90e2b147f63829104c5d6e7f8a9b0c1d2e3f4a5b6c7',
+    // Aligned to the on-chain get_discovery readback for HLS-2026-0104
+    // (contract 0xf0C3D7e7a4c31fda6a07ED96575f15a8Ac86f240): the preprint URL,
+    // SHA-256, novelty tier, title and clause below are the read-back values,
+    // not a separate fictional record. No real institution is claimed: this
+    // is a labelled synthetic acceptance fixture.
+    titleEn: 'Synthetic structural benchmark: controlled acceptance fixture',
+    titleZh: '合成结构基准：受控验收夹具',
+    leadAuthor: 'Heliosophia synthetic acceptance fixture',
+    institutionEn: 'Heliosophia controlled integration fixture',
+    institutionZh: 'Heliosophia 受控集成夹具',
+    preprintUrl: 'https://raw.githubusercontent.com/gqzy1/heliosophia-genlayer-protocol/f9e37bf76a59ca17b4b75b8fb3822c95bbe8287e/public/evidence/preprint.txt',
+    preprintSha256: '10862ba20088193744a5a54de7ec3a6af682fe31b836262689f0cbda6f3128d6',
     targetMetricClauseEn:
-      'Independent replication on CASP16 target T1124 must achieve backbone RMSD <= 1.26 Angstrom (baseline claim: 1.18 A +/- 0.08 A) while reducing inference FLOPs by at least 38.0% relative to AlphaFold-3 baseline.',
+      'Across five seeds, backbone RMSD must be <= 1.26 Angstrom and compute reduction >= 38 percent on the synthetic target.',
     targetMetricClauseZh:
-      '在 CASP16 靶点 T1124 上的独立复现必须达到主链 RMSD <= 1.26 埃（原论文声称值：1.18 埃 +/- 0.08 埃容差），且相对于 AlphaFold-3 基线降低至少 38.0% 的推理浮点运算量（FLOPs）。',
+      '该合成基准夹具要求一种合成方法在五个独立种子下均达到主链 RMSD ≤ 1.26 埃、相对夹具基线计算削减 ≥ 38%，两项限值须在全部五次运行中同时满足。',
     royaltyPoolUsdc: 80000,
     replicatorShareBps: 2000,
-    noveltyTier: 'BREAKTHROUGH',
+    noveltyTier: 'DERIVATIVE',
     initialEciBps: 7600,
     verifiedEciBps: 9550,
     refutedEciBps: 4100,
@@ -91,22 +96,24 @@ export const SCIENTIFIC_DISCOVERIES: ScientificDiscovery[] = [
     tolerancePlusMinus: 0.08,
     replicatedMetricValue: 1.21,
     refutedMetricValue: 2.84,
-    replicationLabEn: 'Max Planck & ETH Independent Bio-Compute Verification Node',
-    replicationLabZh: '马克斯·普朗克与苏黎世独立生物计算验证节点',
-    replicationTelemetryUrl: 'https://telemetry.eth-zurich-biolab.ch/runs/casp16-t1124-repro.json',
-    replicationTelemetrySha256: '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
+    replicationLabEn: 'Heliosophia controlled integration fixture',
+    replicationLabZh: 'Heliosophia 受控集成夹具',
+    replicationTelemetryUrl: 'https://raw.githubusercontent.com/gqzy1/heliosophia-genlayer-protocol/f9e37bf76a59ca17b4b75b8fb3822c95bbe8287e/public/evidence/replication.json',
+    replicationTelemetrySha256: 'af08c1ee58643c105427aedb00344a2b5cd44264dead55b495444f43e3b7dc3f',
     replicationTelemetryJson: JSON.stringify(
       {
-        folio_id: 'HLS-2026-0104',
-        benchmark_target: 'CASP16-T1124-Allosteric',
-        hardware_cluster: '8x NVIDIA H200 SXM (Deterministic Seed 42..46)',
-        claimed_backbone_rmsd_angstrom: 1.18,
-        observed_backbone_rmsd_angstrom: 1.21,
-        allowed_ceiling_angstrom: 1.26,
-        flop_reduction_pct: 40.9,
-        required_flop_reduction_pct: 38.0,
-        p_value: 0.00014,
-        reproducible: true,
+        evidence_type: 'SYNTHETIC_ACCEPTANCE_FIXTURE',
+        lab: 'Heliosophia controlled integration fixture',
+        target: 'synthetic-structure-01',
+        units: { backbone_rmsd: 'Angstrom', compute_reduction: 'percent' },
+        runs: [
+          { seed: 1, backbone_rmsd: 1.21, compute_reduction: 40.9 },
+          { seed: 2, backbone_rmsd: 1.22, compute_reduction: 40.4 },
+          { seed: 3, backbone_rmsd: 1.2, compute_reduction: 41.0 },
+          { seed: 4, backbone_rmsd: 1.23, compute_reduction: 39.8 },
+          { seed: 5, backbone_rmsd: 1.21, compute_reduction: 40.7 },
+        ],
+        notice: 'Synthetic inputs for real Studionet consensus execution; no real scientific experiment or institutional affiliation.',
       },
       null,
       2
@@ -125,13 +132,13 @@ export const SCIENTIFIC_DISCOVERIES: ScientificDiscovery[] = [
       2
     ),
     synthesisSummaryEn:
-      'GenVM Non-Comparative Synthesis indexed 38 pages of preprint equations & benchmark logs: replaces cubic triangle-attention with bidirectional Mamba-3 geometric operators.',
+      'Synthetic acceptance fixture: five seeded runs must satisfy backbone RMSD <= 1.26 Angstrom and compute reduction >= 38 percent.',
     synthesisSummaryZh:
-      'GenVM 非比较式等价原则已索引 38 页预印本方程与基准日志：通过双向状态空间几何算子替代传统三次方三角注意力机制。',
+      '该合成基准夹具要求一种合成方法在五个独立种子下均达到主链 RMSD ≤ 1.26 埃、相对夹具基线计算削减 ≥ 38%，两项限值须在全部五次运行中同时满足。',
     auditConclusionVerifiedEn:
-      'Observed 1.21 Å RMSD lies strictly within the [1.10 Å, 1.26 Å] confidence corridor (+0.03 Å drift) with 40.9% FLOP savings. Epistemic Confidence upgraded to 95.50%; 64,000 USDC released to Lead Authors and 16,000 USDC to Replicator Lab.',
+      'All five synthetic runs satisfy both the backbone RMSD and compute reduction requirements. Epistemic Confidence upgraded to 95.50%; 64,000 USDC released to Lead Authors and 16,000 USDC to Replicator Lab.',
     auditConclusionVerifiedZh:
-      '独立实测 1.21 Å RMSD 严格落在 [1.10 Å, 1.26 Å] 置信走廊内（仅偏差 +0.03 Å），且算力节省达 40.9%。认知置信度（ECI）提升至 95.50%；自动向原作者释放 64,000 USDC 版税，向复现实验室发放 16,000 USDC 激励。',
+      '五次合成运行均满足主链 RMSD 与算力削减要求。认知置信度（ECI）提升至 95.50%；向原作者释放 64,000 USDC 版税，向复现实验室发放 16,000 USDC 激励。',
     auditConclusionRefutedEn:
       'Observed 2.84 Å RMSD violates the 1.26 Å falsifiability threshold due to template weight leakage. Epistemic Confidence slashed to 41.00%; Author royalty locked and whistleblowing bounty allocated to Auditor.',
     auditConclusionRefutedZh:

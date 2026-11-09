@@ -7,7 +7,7 @@ interface Props {
   selectedValidator: EpistemicValidator;
   onSelectValidator: (v: EpistemicValidator) => void;
   auditStage: number; // 0..5
-  auditMode: 'REPLICATED' | 'REFUTED';
+  auditMode: 'REPLICATED' | 'PARTIAL' | 'REFUTED';
   reducedMotion: boolean;
   darkMode: boolean;
   lang: 'en' | 'zh';
@@ -109,6 +109,8 @@ export const EpistemicCartographyCanvas: React.FC<Props> = ({
         auditStage >= 4
           ? auditMode === 'REPLICATED'
             ? verdigris
+            : auditMode === 'PARTIAL'
+            ? '#b45309'
             : vermilion
           : prussian;
       ctx.lineWidth = 1.5;
@@ -117,6 +119,8 @@ export const EpistemicCartographyCanvas: React.FC<Props> = ({
         auditStage >= 4
           ? auditMode === 'REPLICATED'
             ? 'rgba(21, 128, 61, 0.08)'
+            : auditMode === 'PARTIAL'
+            ? 'rgba(180, 83, 9, 0.08)'
             : 'rgba(217, 56, 30, 0.09)'
           : 'rgba(29, 78, 216, 0.06)';
       ctx.fill();
@@ -189,10 +193,14 @@ export const EpistemicCartographyCanvas: React.FC<Props> = ({
         16,
         h - 14
       );
+      // Simulation preview only. PARTIAL leaves the ECI unchanged, so it
+      // shows the initial ECI, never the refuted one.
       const eciCurrent =
         auditStage >= 4
           ? auditMode === 'REPLICATED'
             ? discovery.verifiedEciBps
+            : auditMode === 'PARTIAL'
+            ? discovery.initialEciBps
             : discovery.refutedEciBps
           : discovery.initialEciBps;
       ctx.fillStyle = inkMain;

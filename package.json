@@ -9,6 +9,9 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test:contract": "python3 contracts/test_heliosophia_contract.py",
+    "test:dossier": "node scripts/test_dossier_readback.mjs",
+    "test": "npm run test:contract && npm run test:dossier",
+    "partial-case": "node scripts/partial_case.mjs",
     "deploy:studionet": "node scripts/deploy_and_verify_studionet.mjs"
   },
   "dependencies": {

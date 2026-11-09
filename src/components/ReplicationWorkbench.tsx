@@ -12,12 +12,13 @@ import {
   STUDIONET_CHAIN_CONFIG,
   submitReplicationProofOnChain,
 } from '../config/studionet';
+import { buildDossierFromReadback, modeFromVerdict, parseReadback } from '../utils/dossier';
 
 interface Props {
   discovery: ScientificDiscovery;
   auditStage: number;
-  auditMode: 'REPLICATED' | 'REFUTED';
-  onRunAudit: (mode: 'REPLICATED' | 'REFUTED') => void;
+  auditMode: 'REPLICATED' | 'PARTIAL' | 'REFUTED';
+  onRunAudit: (mode: 'REPLICATED' | 'PARTIAL' | 'REFUTED') => void;
   onRegisterCustomDiscovery: (custom: ScientificDiscovery) => void;
   lang: 'en' | 'zh';
   boundContractAddress: string | null;
@@ -62,14 +63,28 @@ export const ReplicationWorkbench: React.FC<Props> = ({
   const [statusDetail, setStatusDetail] = useState<string>('');
 
   const isPending = ['SIGNING_AND_SUBMITTING', 'PENDING_PROPOSING', 'COMMITTING_EQUIVALENCE', 'FINALIZED'].includes(txLifecycle.phase);
-  const authorPayout =
-    auditStage >= 4 && auditMode === 'REPLICATED'
-      ? Math.round((discovery.royaltyPoolUsdc * (10000 - discovery.replicatorShareBps)) / 10000)
-      : 0;
-  const replicatorPayout =
-    auditStage >= 4 && auditMode === 'REPLICATED'
-      ? Math.round((discovery.royaltyPoolUsdc * discovery.replicatorShareBps) / 10000)
-      : 0;
+  // Gate 11: every displayed/exported value comes from the FINALIZED
+  // get_discovery readback. Before a readback there is nothing to display:
+  // no verdict, no ECI, no allocation. `auditMode` is only the local
+  // simulation preview and must never feed these fields.
+  const readbackRecord = (() => {
+    try {
+      return parseReadback(txLifecycle.readbackDataJson);
+    } catch {
+      return null;
+    }
+  })();
+  const readbackMode = readbackRecord ? modeFromVerdict(readbackRecord.last_verdict) : null;
+  const readbackEciBps = readbackRecord ? readbackRecord.epistemic_confidence_bps : null;
+  // Cumulative amounts released so far, as read back. Not "released by this
+  // verdict": a PARTIAL verdict unlocks nothing (see unlockedBpsByThisVerdict).
+  const authorPayout = readbackRecord ? readbackRecord.author_royalty_released : 0;
+  const replicatorPayout = readbackRecord ? readbackRecord.replicator_royalty_released : 0;
+  const unlockedBpsByThisVerdict = readbackRecord
+    ? readbackRecord.last_verdict === 'REPLICATED_WITHIN_TOLERANCE'
+      ? 10000
+      : 0
+    : 0;
 
   /**
    * Executes real on-chain `submit_replication_proof` via `genlayer-js` `writeContract`,
@@ -122,7 +137,7 @@ export const ReplicationWorkbench: React.FC<Props> = ({
       });
 
       const record = JSON.parse(result.readbackJson);
-      onRunAudit(record.last_verdict === 'REPLICATION_REFUTED' ? 'REFUTED' : 'REPLICATED');
+      onRunAudit(modeFromVerdict(record.last_verdict));
       soundInstrument.playEpistemicSeal();
       setTxLifecycle({
         phase: 'READBACK_VERIFIED',
@@ -176,41 +191,31 @@ export const ReplicationWorkbench: React.FC<Props> = ({
 
   const handleExportDossier = () => {
     soundInstrument.playApertureClick();
-    const dossier = {
-      protocol: 'HELIOSOPHIA // Epistemic Reproducibility & IP Royalty Ledger v2.0',
-      network: {
-        name: STUDIONET_CHAIN_CONFIG.networkName,
-        chainId: STUDIONET_CHAIN_CONFIG.chainIdDecimal,
-        rpcEndpoint: STUDIONET_CHAIN_CONFIG.rpcEndpoint,
-        boundContractAddress: boundContractAddress || null,
-        connectedSigner: wallet.address,
-      },
-      onChainTransaction: {
+    let dossier;
+    try {
+      dossier = buildDossierFromReadback({
+        readbackJson: txLifecycle.readbackDataJson,
+        discoveryId: discovery.id,
         txHash: txLifecycle.txHash,
         receiptStatus: txLifecycle.receiptStatus,
         lifecyclePhase: txLifecycle.phase,
-        readbackDataJson: txLifecycle.readbackDataJson,
-      },
-      discoveryFolio: discovery.id,
-      title: discovery.titleEn,
-      preprintUrl: discovery.preprintUrl,
-      preprintSha256: discovery.preprintSha256,
-      replicationTelemetryUrl: discovery.replicationTelemetryUrl,
-      replicationTelemetrySha256: discovery.replicationTelemetrySha256,
-      equivalenceModes: {
-        registration: 'gl.eq_principle.prompt_non_comparative',
-        replicationAudit: 'gl.eq_principle.prompt_comparative',
-      },
-      verdict: auditMode === 'REPLICATED' ? 'REPLICATED_WITHIN_TOLERANCE' : 'REPLICATION_REFUTED',
-      epistemicConfidenceBps:
-        auditMode === 'REPLICATED' ? discovery.verifiedEciBps : discovery.refutedEciBps,
-      royaltySettlementUsdc: {
-        totalPool: discovery.royaltyPoolUsdc,
-        leadAuthorReleased: authorPayout,
-        replicatorLabReleased: replicatorPayout,
-      },
-      timestampIso: new Date().toISOString(),
-    };
+        network: {
+          name: STUDIONET_CHAIN_CONFIG.networkName,
+          chainId: STUDIONET_CHAIN_CONFIG.chainIdDecimal,
+          rpcEndpoint: STUDIONET_CHAIN_CONFIG.rpcEndpoint,
+        },
+        boundContractAddress: boundContractAddress || null,
+        connectedSigner: wallet.address,
+        title: discovery.titleEn,
+        preprintUrl: discovery.preprintUrl,
+        replicationTelemetryUrl: discovery.replicationTelemetryUrl,
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Dossier export requires a FINALIZED readback.';
+      setFormError(message);
+      setStatusDetail(message);
+      return;
+    }
     const blob = new Blob([JSON.stringify(dossier, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -273,15 +278,15 @@ export const ReplicationWorkbench: React.FC<Props> = ({
       institutionEn: 'Independent Open-Science Laboratory',
       institutionZh: '独立开放科学实验室',
       preprintUrl: customUrl.trim(),
-      preprintSha256: 'a1b2c3d4e5f60718293a4b5c6d7e8f901a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d',
+      preprintSha256: 'UNCONFIRMED — set from the register_discovery readback.',
       targetMetricClauseEn: customClause.trim(),
       targetMetricClauseZh: customClause.trim(),
       royaltyPoolUsdc: poolVal,
       replicatorShareBps: shareVal,
-      noveltyTier: 'BREAKTHROUGH',
-      initialEciBps: 7500,
-      verifiedEciBps: 9480,
-      refutedEciBps: 3900,
+      noveltyTier: 'DERIVATIVE',
+      initialEciBps: 7600,
+      verifiedEciBps: 7600,
+      refutedEciBps: 7600,
       baselineMetricValue: 5.42,
       baselineMetricUnit: 'PPL / Metric',
       tolerancePlusMinus: 0.15,
@@ -290,15 +295,9 @@ export const ReplicationWorkbench: React.FC<Props> = ({
       replicationLabEn: 'GenLayer Decentralized Replicator Quorum',
       replicationLabZh: 'GenLayer 去中心化独立复现节点联盟',
       replicationTelemetryUrl: telemetryUrl.trim(),
-      replicationTelemetrySha256: 'f0e1d2c3b4a5968778695a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d',
+      replicationTelemetrySha256: 'UNCONFIRMED — set from the replication readback.',
       replicationTelemetryJson: JSON.stringify(
-        {
-          folio_id: newId,
-          preprint_source: customUrl.trim(),
-          clause_evaluated: customClause.trim(),
-          reproducible: true,
-          confidence_interval_satisfied: true,
-        },
+        { folio_id: newId, note: 'No replication readback yet.' },
         null,
         2
       ),
@@ -363,6 +362,14 @@ export const ReplicationWorkbench: React.FC<Props> = ({
             }));
           },
         });
+        // The custom folio's identity fields come from the readback, never
+        // from locally invented hashes or projected ECIs.
+        const registered = JSON.parse(res.readbackJson);
+        customItem.preprintSha256 = registered.preprint_sha256;
+        customItem.noveltyTier = registered.novelty_tier;
+        customItem.initialEciBps = registered.epistemic_confidence_bps;
+        customItem.verifiedEciBps = registered.epistemic_confidence_bps;
+        customItem.refutedEciBps = registered.epistemic_confidence_bps;
         onRegisterCustomDiscovery(customItem);
         setCustomTitle('');
         soundInstrument.playEpistemicSeal();
@@ -439,6 +446,49 @@ export const ReplicationWorkbench: React.FC<Props> = ({
     },
   ];
 
+  // Gate 11: step text is readback-driven. No readback -> unconfirmed.
+  // PARTIAL is its own branch: ECI unchanged, 0 unlocked, never success.
+  const step04Desc = (l: 'en' | 'zh'): string => {
+    if (!readbackRecord) {
+      return l === 'en'
+        ? 'No FINALIZED readback yet — verdict, ECI and allocation are unconfirmed.'
+        : '尚未读回 FINALIZED 状态——裁决、ECI 与分配均未确认。';
+    }
+    if (readbackMode === 'PARTIAL') {
+      return l === 'en'
+        ? 'PARTIAL_CONVERGENCE: required measurements are missing, so the claim can neither be confirmed nor refuted.'
+        : 'PARTIAL_CONVERGENCE：缺少必需测量，既不能确认也不能证伪。';
+    }
+    if (readbackMode === 'REFUTED') {
+      return l === 'en'
+        ? `Observed ${discovery.refutedMetricValue} ${discovery.baselineMetricUnit} breached falsifiability ceiling!`
+        : `实测值 ${discovery.refutedMetricValue} ${discovery.baselineMetricUnit} 突破可证伪红线，触发证伪罚没！`;
+    }
+    return l === 'en'
+      ? `Observed ${discovery.replicatedMetricValue} ${discovery.baselineMetricUnit} verified within tolerance.`
+      : `实测值 ${discovery.replicatedMetricValue} ${discovery.baselineMetricUnit} 严格处于容差区间内，5 节点达成一致。`;
+  };
+  const step05Desc = (l: 'en' | 'zh'): string => {
+    if (!readbackRecord || readbackEciBps === null) {
+      return l === 'en'
+        ? 'ECI and royalty allocation are unconfirmed until the FINALIZED get_discovery readback.'
+        : 'ECI 与版税分配在 FINALIZED get_discovery 读回之前均为未确认。';
+    }
+    if (readbackMode === 'PARTIAL') {
+      return l === 'en'
+        ? `ECI unchanged at ${(readbackEciBps / 100).toFixed(2)}%. PARTIAL_CONVERGENCE unlocks nothing (0 bps). Cumulative released: ${authorPayout.toLocaleString()} USDC to Author, ${replicatorPayout.toLocaleString()} USDC to Replicator.`
+        : `ECI 不变，仍为 ${(readbackEciBps / 100).toFixed(2)}%。PARTIAL_CONVERGENCE 不解锁任何分配（0 bps）。累计已释放：原作者 ${authorPayout.toLocaleString()} USDC，复现方 ${replicatorPayout.toLocaleString()} USDC。`;
+    }
+    if (readbackMode === 'REFUTED') {
+      return l === 'en'
+        ? `ECI read back at ${(readbackEciBps / 100).toFixed(2)}%. This verdict unlocks nothing; the royalty pool is locked against an irreproducible claim.`
+        : `ECI 读回为 ${(readbackEciBps / 100).toFixed(2)}%。本次裁决不解锁任何分配，版税池冻结并标记不可复现警告。`;
+    }
+    return l === 'en'
+      ? `ECI read back at ${(readbackEciBps / 100).toFixed(2)}%. Cumulative released ${authorPayout.toLocaleString()} USDC to Author & ${replicatorPayout.toLocaleString()} USDC to Replicator.`
+      : `ECI 读回为 ${(readbackEciBps / 100).toFixed(2)}%。累计已释放：原作者 ${authorPayout.toLocaleString()} USDC，复现方 ${replicatorPayout.toLocaleString()} USDC。`;
+  };
+
   const steps = [
     {
       idx: 1,
@@ -469,28 +519,16 @@ export const ReplicationWorkbench: React.FC<Props> = ({
       code: 'STEP 04 // gl.eq_principle.prompt_comparative',
       titleEn: '5-Validator Optimistic Democracy Equivalence Audit',
       titleZh: '5 验证节点乐观民主比较式等价裁决',
-      descEn:
-        auditMode === 'REPLICATED'
-          ? `Observed ${discovery.replicatedMetricValue} ${discovery.baselineMetricUnit} verified within tolerance.`
-          : `Observed ${discovery.refutedMetricValue} ${discovery.baselineMetricUnit} breached falsifiability ceiling!`,
-      descZh:
-        auditMode === 'REPLICATED'
-          ? `实测值 ${discovery.replicatedMetricValue} ${discovery.baselineMetricUnit} 严格处于容差区间内，5 节点达成一致。`
-          : `实测值 ${discovery.refutedMetricValue} ${discovery.baselineMetricUnit} 突破可证伪红线，触发证伪罚没！`,
+      descEn: step04Desc('en'),
+      descZh: step04Desc('zh'),
     },
     {
       idx: 5,
       code: 'STEP 05 // DYNAMIC ECI & ROYALTY SETTLEMENT',
       titleEn: 'Epistemic Confidence Update & Royalty Split Execution',
       titleZh: '认知置信度（ECI）更新与科研版税自动分账',
-      descEn:
-        auditMode === 'REPLICATED'
-          ? `ECI upgraded to ${(discovery.verifiedEciBps / 100).toFixed(2)}%. Released ${authorPayout.toLocaleString()} USDC to Author & ${replicatorPayout.toLocaleString()} USDC to Replicator.`
-          : `ECI slashed to ${(discovery.refutedEciBps / 100).toFixed(2)}%. Royalty pool locked against irreproducible claim.`,
-      descZh:
-        auditMode === 'REPLICATED'
-          ? `ECI 升级至 ${(discovery.verifiedEciBps / 100).toFixed(2)}%。向原作者释放 ${authorPayout.toLocaleString()} USDC，向复现方释放 ${replicatorPayout.toLocaleString()} USDC。`
-          : `ECI 罚没下调至 ${(discovery.refutedEciBps / 100).toFixed(2)}%。冻结版税池并标记不可复现警告。`,
+      descEn: step05Desc('en'),
+      descZh: step05Desc('zh'),
     },
   ];
 
@@ -623,8 +661,10 @@ export const ReplicationWorkbench: React.FC<Props> = ({
               : '⚡ 提交实证证伪上链 (罚没 ECI)'}
           </button>
           <button
+            disabled={!readbackRecord}
+            title={readbackRecord ? undefined : 'Export is disabled until the FINALIZED get_discovery readback.'}
             onClick={handleExportDossier}
-            className="px-3.5 py-2.5 border border-hairline dark:border-nocturneRule bg-alabaster dark:bg-nocturneBg font-mono text-xs text-graphite dark:text-stone-300 hover:border-carbon transition"
+            className="px-3.5 py-2.5 border border-hairline dark:border-nocturneRule bg-alabaster dark:bg-nocturneBg font-mono text-xs text-graphite dark:text-stone-300 hover:border-carbon transition disabled:opacity-40"
           >
             {lang === 'en' ? '↓ Export Epistemic Dossier (.JSON)' : '↓ 导出认知审计档案 (.JSON)'}
           </button>
@@ -640,8 +680,8 @@ export const ReplicationWorkbench: React.FC<Props> = ({
         <div className="lg:col-span-7 space-y-3">
           <div className="font-mono text-xs uppercase tracking-widest text-graphite dark:text-stone-400">
             {lang === 'en'
-              ? 'ILLUSTRATIVE PIPELINE · LIVE JSON ABOVE IS AUTHORITATIVE'
-              : '五阶段流程示意 · 以上链上 JSON 为准'}
+              ? `ILLUSTRATIVE PIPELINE · LIVE JSON ABOVE IS AUTHORITATIVE · SIMULATION MODE: ${auditMode}`
+              : `五阶段流程示意 · 以上链上 JSON 为准 · 模拟模式：${auditMode}`}
           </div>
           {steps.map((st) => {
             const done = auditStage >= st.idx;
@@ -689,7 +729,7 @@ export const ReplicationWorkbench: React.FC<Props> = ({
                   {lang === 'en' ? 'TOTAL ROYALTY ESCROW' : '锁定科研版税总池'}
                 </div>
                 <div className="text-lg font-semibold mt-0.5 tabular-nums">
-                  {discovery.royaltyPoolUsdc.toLocaleString()} USDC
+                  {readbackRecord ? readbackRecord.royalty_pool_usdc.toLocaleString() : '— 未读回'} USDC
                 </div>
               </div>
               <div className="p-3 border border-hairline dark:border-nocturneRule bg-alabaster dark:bg-nocturneBg">
@@ -697,52 +737,70 @@ export const ReplicationWorkbench: React.FC<Props> = ({
                   {lang === 'en' ? 'REPLICATOR INCENTIVE' : '复现实验室分成比例'}
                 </div>
                 <div className="text-lg font-semibold mt-0.5 tabular-nums">
-                  {(discovery.replicatorShareBps / 100).toFixed(1)}%
+                  {readbackRecord ? (readbackRecord.replicator_share_bps / 100).toFixed(1) : '— 未读回'}%
                 </div>
               </div>
               <div className="p-3 border border-hairline dark:border-nocturneRule bg-alabaster dark:bg-nocturneBg">
                 <div className="text-[10px] text-graphite dark:text-stone-400">
-                  {lang === 'en' ? 'AUTHOR RELEASED' : '原作者已解锁版税'}
+                  {lang === 'en' ? 'AUTHOR RELEASED · CUMULATIVE (READBACK)' : '原作者已解锁版税 · 累计（读回）'}
                 </div>
                 <div className="text-lg font-semibold text-verdigris mt-0.5 tabular-nums">
-                  {authorPayout.toLocaleString()} USDC
+                  {readbackRecord ? `${authorPayout.toLocaleString()} USDC` : '— 未读回'}
                 </div>
               </div>
               <div className="p-3 border border-hairline dark:border-nocturneRule bg-alabaster dark:bg-nocturneBg">
                 <div className="text-[10px] text-graphite dark:text-stone-400">
-                  {lang === 'en' ? 'REPLICATOR RELEASED' : '复现方已获赏金'}
+                  {lang === 'en' ? 'REPLICATOR RELEASED · CUMULATIVE (READBACK)' : '复现方已获赏金 · 累计（读回）'}
                 </div>
                 <div className="text-lg font-semibold text-prussian mt-0.5 tabular-nums">
-                  {replicatorPayout.toLocaleString()} USDC
+                  {readbackRecord ? `${replicatorPayout.toLocaleString()} USDC` : '— 未读回'}
                 </div>
               </div>
             </div>
 
+            <div className="mt-4 pt-4 border-t border-hairline dark:border-nocturneRule font-mono text-[11px] text-graphite dark:text-stone-400">
+              {lang === 'en'
+                ? readbackRecord
+                  ? `UNLOCKED BY THIS VERDICT: ${(unlockedBpsByThisVerdict / 100).toFixed(0)}% (PARTIAL / REFUTED: 0%) · VERDICT: ${readbackRecord.last_verdict} · STATUS: ${readbackRecord.status}`
+                  : 'UNLOCKED BY THIS VERDICT: 未读回'
+                : readbackRecord
+                ? `本次裁决解锁：${(unlockedBpsByThisVerdict / 100).toFixed(0)}%（PARTIAL / REFUTED 为 0%）· 裁决：${readbackRecord.last_verdict} · 状态：${readbackRecord.status}`
+                : '本次裁决解锁：未读回'}
+            </div>
             <div className="mt-4 pt-4 border-t border-hairline dark:border-nocturneRule">
               <div className="font-mono text-[11px] uppercase text-vermilion">
                 {lang === 'en' ? 'ON-CHAIN AUDIT CONCLUSION' : '链上乐观民主裁决结论'}
               </div>
               <p className="text-xs text-carbon dark:text-stone-200 mt-1.5 leading-relaxed">
-                {auditMode === 'REPLICATED'
-                  ? lang === 'en'
-                    ? discovery.auditConclusionVerifiedEn
-                    : discovery.auditConclusionVerifiedZh
+                {readbackRecord
+                  ? readbackRecord.last_audit_conclusion ??
+                    (lang === 'en' ? 'Readback has no audit conclusion.' : '读回中无裁决结论。')
                   : lang === 'en'
-                  ? discovery.auditConclusionRefutedEn
-                  : discovery.auditConclusionRefutedZh}
+                  ? 'Unconfirmed — the audit conclusion comes from the FINALIZED get_discovery readback.'
+                  : '未确认——裁决结论以 FINALIZED get_discovery 读回为准。'}
               </p>
             </div>
           </div>
 
           <div className="p-4 border border-hairline dark:border-nocturneRule bg-alabaster dark:bg-nocturneBg">
             <div className="flex items-center justify-between font-mono text-[11px] text-graphite dark:text-stone-400 mb-2">
-              <span>LIVE TELEMETRY PAYLOAD (`gl.get_webpage`)</span>
-              <span>SHA-256 VERIFIED</span>
+              <span>LIVE TELEMETRY DIGEST (READBACK)</span>
+              <span>{readbackRecord ? 'SHA-256 · 读回' : '未读回'}</span>
             </div>
             <pre className="p-3 bg-linen dark:bg-nocturneSurface border border-hairline dark:border-nocturneRule font-mono text-[11px] overflow-x-auto leading-relaxed">
-              {auditMode === 'REPLICATED'
-                ? discovery.replicationTelemetryJson
-                : discovery.refutationTelemetryJson}
+              {readbackRecord
+                ? JSON.stringify(
+                    {
+                      discovery_id: readbackRecord.id,
+                      last_verdict: readbackRecord.last_verdict,
+                      status: readbackRecord.status,
+                      epistemic_confidence_bps: readbackRecord.epistemic_confidence_bps,
+                      last_telemetry_sha256: readbackRecord.last_telemetry_sha256 ?? null,
+                    },
+                    null,
+                    2
+                  )
+                : 'Unconfirmed — the telemetry digest comes from the FINALIZED get_discovery readback.'}
             </pre>
           </div>
         </div>
